@@ -1,2 +1,2 @@
 Hello~
-g++ src/main.cpp -o syringe
+g++ src/main.cpp -o syrup
