@@ -1,1 +1,3 @@
-test test test
+int add(a, b) {
+    return a+b;
+}
