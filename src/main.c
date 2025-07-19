@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lexer.h"
+#include "../include/lexer.h"
+#include "../include/compiler.h"
 
 static char* readFile(const char* path) {
     FILE* file = fopen(path, "r");
@@ -43,7 +44,6 @@ static char* readFile(const char* path) {
 
 static void runFile(const char* path) {
     char* source = readFile(path);
-
     compile(source);
 
 }
