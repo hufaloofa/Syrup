@@ -20,6 +20,7 @@ void compile(char* source) {
     printf("%u\n", exemplar.type);
     
     // nextChar();
+    skipWhiteSpace();
     char newcurrent = peek();
     printf("%c\n", newcurrent);
     exemplar2 = scanToken();

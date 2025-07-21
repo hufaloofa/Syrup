@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <strings.h>
 
 #include "../include/lexer.h"
 
@@ -33,18 +34,31 @@ char peek() {
     return *lexer.current;
 }
 
+char peekNext() {
+    if (isAtEnd()) return '\0';
+    return lexer.current[1];
+}
+
 void skipWhiteSpace() {
     for (;;) {
         char c = peek();
         switch (c) {
             case ' ':
             case '\r':
-            case '\t':
+            case '\t': // tab case
                 nextChar();
                 break;
-            case '\n':
+            case '\n': // new line case
                 lexer.line++;
                 nextChar();
+                break;
+            // comment case
+            case '/':
+                if (peekNext() == '/') {
+                    while (peek()!='\n' && !isAtEnd()) nextChar(); 
+                } else {
+                    return;
+                }
                 break;
             default:
                 return;
@@ -61,11 +75,40 @@ Token makeToken(TokenType type) {
     return token;
 }
 
+Token errorToken(char* errorMessage) {
+    Token token;
+    token.type = _ERROR;
+    token.start = errorMessage;
+    token.line = lexer.line;
+    token.length = (int)strlen(errorMessage);
+    return token;
+}
+
+bool match(char c) {
+    if (isAtEnd()) return false;
+    if (*lexer.current != c) return false;
+
+    lexer.current++;
+    return true;
+}
+
+Token string() {
+    while (peek() != '"' && !isAtEnd()) {
+        if (peek() == '\n') lexer.line++;
+        nextChar();
+    }
+    if (isAtEnd()) {
+        return errorToken("Unterminated string you fool!");
+    }
+    nextChar();
+    return makeToken(_STRING);   
+}
+
 Token scanToken() {
     skipWhiteSpace();
     lexer.start = lexer.current;
     if (isAtEnd()) return makeToken(_EOF);
-    char c = nextChar();
+    char c = nextChar(); // goes to next char but returns "current char"
     // if (isAlpha(c))
     // if (isDigit(c))
 
@@ -87,13 +130,18 @@ Token scanToken() {
         case '=':
             return makeToken(_EQUAL);
         case '"':
-            return makeToken(_STRING);
+            return string();
         case ',':
             return makeToken(_COMMA);
+        case '/':
+            return makeToken(_SLASH);
+
     }
     
     // placeholder
-    return makeToken(_ERROR);
+    return errorToken("What character is this? You fool!");
 }
+
+
 
 

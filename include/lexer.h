@@ -8,8 +8,11 @@ typedef struct {
 } Lexer;
 
 typedef enum {
-    _SEMICOLON, _LEFT_PAR, _RIGHT_PAR, _LEFT_CURLY, _RIGHT_CURLY, _PLUS, _MINUS,
-    _EQUAL, _EOF, _STRING, _COMMA, _ERROR
+    _SEMICOLON, _LEFT_PAR, _RIGHT_PAR, _LEFT_CURLY, _RIGHT_CURLY, 
+    
+    _PLUS, _MINUS, _EQUAL,
+    
+    _EOF, _STRING, _COMMA, _ERROR, _SLASH,
 } TokenType;
 
 typedef struct {
