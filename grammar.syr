@@ -4,3 +4,7 @@
 let names = ['a', 'b', 'c'];
 
 // perhaps in built features such as linked list and stack and queue etc
+
+// when we define functions then we do 
+
+def add(x,y);

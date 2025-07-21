@@ -6,6 +6,7 @@
 #include "../include/compiler.h"
 
 static char* readFile(const char* path) {
+    // copy and paste from google ai search thing pretty goated
     FILE* file = fopen(path, "r");
 
     // no file

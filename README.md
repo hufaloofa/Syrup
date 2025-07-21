@@ -1,5 +1,4 @@
 Hello~
-g++ src/main.cpp -o syrup
 
 Credits to Robert Nystrom from crafting interpreters for resources 
 https://craftinginterpreters.com/

@@ -104,13 +104,81 @@ Token string() {
     return makeToken(_STRING);   
 }
 
+Token number() {
+    while (isDigit(peek())) nextChar();
+    if (peek() == '.' && isDigit(peekNext())) {
+        nextChar();
+        while (isDigit(peek())) nextChar();
+    }
+    return makeToken(_NUMBER);
+
+}
+
+/*
+    ie for else. if lexer.current is 14 and lexer.start is 10
+    since we know the start and end of the char, then 14-10 must be 
+    equal to 1 (start) + 3 (length)
+ */
+TokenType checkWord(int start, int length, char* c, TokenType type) {
+    if (lexer.current - lexer.start == start + length && memcmp(lexer.start + start, c, length) == 0) {
+        return type;    
+    }
+
+    return _IDENTIFIER;
+}
+
+TokenType identifierType() {
+    switch (lexer.start[0]) {
+        case 'a':
+            return checkWord(1, 2, "nd", _AND);
+        case 'd':
+            return checkWord(1, 2, "ef", _DEF);
+        case 'e':
+            return checkWord(1, 3, "lse", _ELSE);
+        case 'f':
+            if (lexer.current - lexer.start > 1) {
+                switch (lexer.start[1]) {
+                    case 'a':
+                        return checkWord(2, 3, "lse", _FALSE);
+                    case 'o':
+                        return checkWord(2, 1, "r", _FOR);
+                }
+            }
+        case 'l':
+            return checkWord(1, 2, "et", _LET);
+        case 'i':
+            return checkWord(1, 1, "f", _IF);
+        case 'o':
+            return checkWord(1, 1, "r", _OR);
+        case 'p':
+            return checkWord(1, 4, "rint", _PRINT);
+        case 'r':
+            return checkWord(1, 5, "eturn", _RETURN);
+        case 't':
+            return checkWord(1, 3, "rue", _TRUE);
+        default:
+            return _IDENTIFIER;
+
+        
+    }
+}
+
+Token identifier() {
+    while (isAlpha(peek()) || isDigit(peek())) nextChar(); // skips to end of char
+    return makeToken(identifierType());
+}
+
 Token scanToken() {
     skipWhiteSpace();
     lexer.start = lexer.current;
     if (isAtEnd()) return makeToken(_EOF);
     char c = nextChar(); // goes to next char but returns "current char"
-    // if (isAlpha(c))
-    // if (isDigit(c))
+    if (isAlpha(c)) {
+        return identifier();
+    }
+    if (isDigit(c)) {
+        return number();
+    }
 
     switch (c) {
         case ';':
@@ -128,17 +196,27 @@ Token scanToken() {
         case '-':
             return makeToken(_MINUS);
         case '=':
-            return makeToken(_EQUAL);
+            return makeToken(match('=') ? _EQUAL_EQUAL : _EQUAL);
         case '"':
             return string();
         case ',':
             return makeToken(_COMMA);
         case '/':
             return makeToken(_SLASH);
+        case '*':
+            return makeToken(_STAR);
+        case '.':
+            return makeToken(_DOT);
+        case '!':
+            return makeToken(match('=') ? _BANG_EQUAL : _BANG);
+        case '>':
+            return makeToken(match('=') ? _GREATER_THAN : _GREATER);
+        case '<':
+            return makeToken(match('=') ? _LESS_THAN : _LESS);
+        // default:
 
     }
     
-    // placeholder
     return errorToken("What character is this? You fool!");
 }
 
