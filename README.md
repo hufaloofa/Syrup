@@ -1,4 +1,4 @@
-Hello~
+Welcome to Syrup
 
 Credits to Robert Nystrom from crafting interpreters for resources 
 https://craftinginterpreters.com/
