@@ -168,6 +168,15 @@ Token identifier() {
     return makeToken(identifierType());
 }
 
+void scanTokens() {
+    while (!isAtEnd()) {
+        lexer.start = lexer.current;
+        Token exemplar;
+        exemplar = scanToken();
+        printf("%u\n", exemplar.type);
+    }
+}
+
 Token scanToken() {
     skipWhiteSpace();
     lexer.start = lexer.current;

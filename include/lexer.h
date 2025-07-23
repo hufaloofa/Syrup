@@ -46,3 +46,5 @@ void skipWhiteSpace();
 Token scanToken();
 
 char nextChar();
+
+void scanTokens();
