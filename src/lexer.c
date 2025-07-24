@@ -66,12 +66,13 @@ void skipWhiteSpace() {
     }
 }
 
-Token makeToken(TokenType type) {
+Token makeToken(TokenType type, char* value) {
     Token token;
     token.type = type;
     token.start = lexer.start;
     token.line = lexer.line;
     token.length = (int)(lexer.current - lexer.start);
+    token.value = value;
     return token;
 }
 
@@ -100,8 +101,12 @@ Token string() {
     if (isAtEnd()) {
         return errorToken("Unterminated string you fool!");
     }
+    int length = lexer.current - lexer.start;
+    char* temp = malloc(length + 1);
+    memcpy(temp, lexer.start+1, length-1);
+    temp[length] = '\0';
     nextChar();
-    return makeToken(_STRING);   
+    return makeToken(_STRING, temp);   
 }
 
 Token number() {
@@ -110,7 +115,11 @@ Token number() {
         nextChar();
         while (isDigit(peek())) nextChar();
     }
-    return makeToken(_NUMBER);
+    int length = lexer.current - lexer.start;
+    char* temp = malloc(length + 1);
+    memcpy(temp, lexer.start, length);
+    temp[length] = '\0';
+    return makeToken(_NUMBER, temp);
 
 }
 
@@ -165,7 +174,11 @@ TokenType identifierType() {
 
 Token identifier() {
     while (isAlpha(peek()) || isDigit(peek())) nextChar(); // skips to end of char
-    return makeToken(identifierType());
+    int length = lexer.current - lexer.start;
+    char* temp = malloc(length + 1);
+    memcpy(temp, lexer.start, length);
+    temp[length] = '\0';
+    return makeToken(identifierType(), temp);
 }
 
 void scanTokens() {
@@ -173,15 +186,16 @@ void scanTokens() {
         lexer.start = lexer.current;
         Token exemplar;
         exemplar = scanToken();
-        printf("%u\n", exemplar.type);
+        printf("%u : %s\n", exemplar.type, exemplar.value);
     }
 }
 
 Token scanToken() {
     skipWhiteSpace();
     lexer.start = lexer.current;
-    if (isAtEnd()) return makeToken(_EOF);
+    if (isAtEnd()) return makeToken(_EOF, "\0");
     char c = nextChar(); // goes to next char but returns "current char"
+    bool isEqual;
     if (isAlpha(c)) {
         return identifier();
     }
@@ -191,37 +205,41 @@ Token scanToken() {
 
     switch (c) {
         case ';':
-            return makeToken(_SEMICOLON);
+            return makeToken(_SEMICOLON, ";");
         case '(':
-            return makeToken(_LEFT_PAR);
+            return makeToken(_LEFT_PAR, "(");
         case ')':
-            return makeToken(_RIGHT_PAR);
+            return makeToken(_RIGHT_PAR, ")");
         case '{':
-            return makeToken(_LEFT_CURLY);
+            return makeToken(_LEFT_CURLY, "{");
         case '}':
-            return makeToken(_RIGHT_CURLY);
+            return makeToken(_RIGHT_CURLY, "}");
         case '+':
-            return makeToken(_PLUS);
+            return makeToken(_PLUS, "+");
         case '-':
-            return makeToken(_MINUS);
+            return makeToken(_MINUS, "-");
         case '=':
-            return makeToken(match('=') ? _EQUAL_EQUAL : _EQUAL);
+            isEqual = match('=');
+            return makeToken(isEqual ? _EQUAL_EQUAL : _EQUAL, isEqual ? "==" : "=");
         case '"':
             return string();
         case ',':
-            return makeToken(_COMMA);
+            return makeToken(_COMMA, ",");
         case '/':
-            return makeToken(_SLASH);
+            return makeToken(_SLASH, "/");
         case '*':
-            return makeToken(_STAR);
+            return makeToken(_STAR, "*");
         case '.':
-            return makeToken(_DOT);
+            return makeToken(_DOT, ".");
         case '!':
-            return makeToken(match('=') ? _BANG_EQUAL : _BANG);
+            isEqual = match('=');
+            return makeToken(isEqual ? _BANG_EQUAL : _BANG, isEqual ? "!=" : "!");
         case '>':
-            return makeToken(match('=') ? _GREATER_THAN : _GREATER);
+            isEqual = match('=');  
+            return makeToken(isEqual ? _GREATER_THAN : _GREATER, isEqual ? ">=" : ">");
         case '<':
-            return makeToken(match('=') ? _LESS_THAN : _LESS);
+            isEqual = match('=');
+            return makeToken(isEqual ? _LESS_THAN : _LESS, isEqual ? "<=" : "<");
         // default:
 
     }

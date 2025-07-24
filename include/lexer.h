@@ -1,3 +1,6 @@
+#ifndef LEXER_H
+#define LEXER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -8,25 +11,26 @@ typedef struct {
 } Lexer;
 
 typedef enum {
+    _NONE,
+
     // single char tokens   
     _SEMICOLON, _LEFT_PAR, _RIGHT_PAR, _LEFT_CURLY, _RIGHT_CURLY, 
     _SLASH, _PLUS, _MINUS, _COMMA, _STAR, 
-    _DOT, // 10
+    _DOT,
 
-    // one or two char // 11
+    // one or two char 
     _BANG, _BANG_EQUAL, _EQUAL, _EQUAL_EQUAL,  _GREATER, 
     _GREATER_THAN, _LESS, _LESS_THAN, 
 
-    // literals, identifier = var name // 19
+    // literals, identifier = var name
     _STRING, _NUMBER, _IDENTIFIER,
 
-    // key words // 22
+    // key words
     _AND, _FOR, _OR, _ELSE, _IF, 
     _TRUE, _FALSE, _PRINT, _RETURN, _WHILE, 
-    _LET, _DEF, _ERROR, 
+    _LET, _DEF, _ERROR, _NIL,
     
-    // 35
-    _EOF, 
+    _EOF,
 
 } TokenType;
 
@@ -35,6 +39,7 @@ typedef struct {
     char* start;
     int length;
     int line;
+    char* value;
 } Token;
 
 void initLexer(char* source);
@@ -48,3 +53,6 @@ Token scanToken();
 char nextChar();
 
 void scanTokens();
+
+Token makeToken(TokenType type, char* value);
+#endif
