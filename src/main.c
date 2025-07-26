@@ -3,7 +3,8 @@
 #include <string.h>
 
 #include "../include/lexer.h"
-#include "../include/compiler.h"
+#include "../include/syrup.h"
+#include "../include/parser.h"
 
 static char* readFile(const char* path) {
     // copy and paste from google ai search thing pretty goated
@@ -45,7 +46,7 @@ static char* readFile(const char* path) {
 
 static void runFile(const char* path) {
     char* source = readFile(path);
-    compile(source);
+    run(source);
 
 }
 

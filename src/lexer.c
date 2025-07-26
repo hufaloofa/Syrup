@@ -184,9 +184,10 @@ Token identifier() {
 void scanTokens() {
     while (!isAtEnd()) {
         lexer.start = lexer.current;
-        Token exemplar;
-        exemplar = scanToken();
-        printf("%u : %s\n", exemplar.type, exemplar.value);
+        Token token = scanToken();
+        // Token exemplar;
+        // exemplar = scanToken();
+        // printf("%u : %s\n", exemplar.type, exemplar.value);
     }
 }
 

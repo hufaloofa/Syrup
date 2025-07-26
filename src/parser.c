@@ -5,6 +5,7 @@
 #include "../include/expr.h"
 #include "../include/debug.h"
 
+
 Token *parser_advance(Parser *p) {
     Token *token = p->current++;
     p->eof = (p->current->type == _EOF);
@@ -128,5 +129,41 @@ Expr *addition(Parser *p) {
     return e;
 }
 
+void synchronise(Parser *p) {
+    parser_advance(p);
+
+    while (!p->eof) {
+        if (p->current[-1].type == _SEMICOLON) return;
+        switch (p->current->type) {
+            case _LET:
+            case _DEF:
+            case _PRINT:
+            case _WHILE:
+            case _FOR:
+            case _IF:
+            case _RETURN:
+                return;
+            default:
+                break;
+        }
+        parser_advance(p);
+    }
+}
+
+Expr *parse(Parser *p, Token *tokens) {
+    if (tokens->type == _NONE) {
+        return NULL;
+    }
+
+    p->tokens = tokens;
+    p->current = p->tokens;
+    p->eof = false;
+
+    Expr *e = expression(p);
+    if (e->type == _NONE) {
+        return NULL;
+    }
+    return e;
+}
 
 

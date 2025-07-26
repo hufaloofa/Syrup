@@ -42,6 +42,12 @@ typedef struct {
     char* value;
 } Token;
 
+typedef struct {
+    Token *tokens;
+    int count;
+    int capacity;
+} TokenArray;
+
 void initLexer(char* source);
 char peek();
 
