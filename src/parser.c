@@ -63,8 +63,15 @@ Expr *equality(Parser *p) {
     return expr;
 }
 
-Expr *comparison(Parser *p) {
-
+Expr *comparison(Parser *p)
+{
+    Expr *e = addition(p);
+    while (parser_match(p, 4, _GREATER, _GREATER_THAN, _LESS, _LESS_THAN)) {
+        Token *op = p->current-1;
+        Expr *rhs = addition(p);
+        e = make_binary_expr(op, e, rhs);
+    }
+    return e;
 }
 
 Expr *unary(Parser *p) {
@@ -99,6 +106,26 @@ Expr *primary(Parser *p) {
     print_token(t);
     return &NoneExpr;
 
+}
+
+Expr *multiplication(Parser *p) {
+    Expr *e = unary(p);
+    while (parser_match(p, 2, _SLASH, _STAR)) {
+        Token *op = p->current-1;
+        Expr *rhs = unary(p);
+        e = make_binary_expr(op, e, rhs);
+    }
+    return e;
+}
+
+Expr *addition(Parser *p) {
+    Expr *e = multiplication(p);
+    while (parser_match(p, 2, _PLUS, _MINUS)) {
+        Token *op = p->current-1;
+        Expr *rhs = multiplication(p);
+        e = make_binary_expr(op, e, rhs);
+    }
+    return e;
 }
 
 
