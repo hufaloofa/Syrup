@@ -47,6 +47,8 @@ struct Expr{
     };
 };
 
+static Expr NoneExpr  = { .type = EXPR_NONE };
+
 Expr *make_num_expr(double num, Token *token);
 Expr *make_string_expr(char *string, Token *token);
 Expr *make_bool_expr(bool b, Token* token);

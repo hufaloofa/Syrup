@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include "../include/parser.h"
 #include "../include/expr.h"
+#include "../include/debug.h"
 
 Token *parser_advance(Parser *p) {
     Token *token = p->current++;
@@ -79,12 +80,24 @@ Expr *unary(Parser *p) {
 Expr *primary(Parser *p) {
     Token *t = p->current;
     double number;
+    
+    if (parser_match(p, 1, _NIL))    return make_nil_expr(p->current-1);
+    if (parser_match(p, 1, _FALSE))  return make_bool_expr(false, p->current-1);
+    if (parser_match(p, 1, _TRUE))   return make_bool_expr(true, p->current-1);
+    if (parser_match(p, 1, _NUMBER)) {
+        sscanf(t->value, "%lf", &number);
+        return make_num_expr(number, p->current-1);
+    }
+    if (parser_match(p, 1, _STRING)) return make_string_expr(t->value, p->current-1);
+    if (parser_match(p, 1, _LEFT_PAR)) {
+        Expr *e = expression(p);
+        consume(p, _RIGHT_PAR);
+        return make_grouping_expr(e);
+    }
 
-    // if (match(p, 1, _FALSE)) return make_bool_expr(false, p->current-1);
-    // if (match(p, 1, _TRUE)) return make_bool_expr(true, p->current-1);
-    // if (match(p, 1, _NIL)) return make_nil_expr(p->current-1);
-    // if (match(p, 1, _NUMBER)) return make_num_expr(p->current-1);
-    // if (match(p, 1, _STRING)) return make_string_expr(p->current-1);
+    printf("unexpected token ");
+    print_token(t);
+    return &NoneExpr;
 
 }
 
