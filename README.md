@@ -1,7 +1,11 @@
 Welcome to Syrup
 
 ```sh
-make && ./syrup <input.syr>
+# build
+make
+
+# interpret syrup file
+./syrup <input.syr>
 ```
 
 Credits to Robert Nystrom from crafting interpreters for resources 
