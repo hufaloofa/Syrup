@@ -11,17 +11,17 @@
 void run(char* source) {
     Lexer lexer = initLexer(source);
     Token *ts = malloc(sizeof(Token) * MAX_TOKENS);
-    int count = scanTokens(&lexer, ts); // gives tokens
+    scanTokens(&lexer, ts); // gives tokens
 
     // NOTE: FOR NOW TOKENS ARE STORED IN ts AND NOT IN LEXER
 
-    for (Token *t = ts; t->type != _EOF; t++) {
+    // for (Token *t = ts; t->type != _EOF; t++) {
+    //     print_token(t);
+    // }
+
+    Parser parser = initParser(ts);
+    for (Token *t = parser.tokens; t->type != _EOF; t++) {
         print_token(t);
     }
-
-
-
-    
-    // Parser parser = initParser(&lexer);
     // Expr *expression = parse(source)
 }

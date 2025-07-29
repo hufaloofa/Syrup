@@ -13,8 +13,8 @@ typedef struct {
     bool eof;
 } Parser;
 
-void initParser(Token *ts);
+Parser initParser(Token *ts);
 
-Expr *parse();
+Expr *parse(Parser *parser);
 
 #endif
