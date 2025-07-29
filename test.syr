@@ -1,6 +1,1 @@
-      
-      
-      let x=3;
-let y=4;
-let z = x+y;
-print("%d", z);
+3 + 4 * (2 - 1)

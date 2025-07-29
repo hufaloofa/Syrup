@@ -20,8 +20,15 @@ void run(char* source) {
     // }
 
     Parser parser = initParser(ts);
-    for (Token *t = parser.tokens; t->type != _EOF; t++) {
-        print_token(t);
+    // for (Token *t = parser.tokens; t->type != _EOF; t++) {
+    //     print_token(t);
+    // }
+
+    Expr *ast = parse(&parser);
+
+    if (ast != NULL) {
+        print_expr(ast);
+    } else {
+        printf("parsing failed XD");
     }
-    // Expr *expression = parse(source)
 }

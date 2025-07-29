@@ -46,3 +46,61 @@ void print_token(Token *token) {
     printf("TOKEN[type: %s, value: \"%s\", line: %d]\n",
             type, token->value, token->line);
 }
+
+
+void print_expr(Expr *expr);
+
+void print_literal(Expr *expr) {
+    if (expr->type == EXPR_NUMBER) {
+        printf("%g", expr->literal.number);
+    } else if (expr->type == EXPR_BOOL) {
+        printf(expr->literal.boolean ? "true" : "false");
+    } else if (expr->type == EXPR_STRING) {
+        printf("\"%s\"", expr->literal.string);
+    } else if (expr->type == EXPR_NIL) {
+        printf("nil");
+    } else {
+        printf("?");
+    }
+}
+
+void print_expr(Expr *expr) {
+    if (expr == NULL) {
+        printf("NULL");
+        return;
+    }
+
+    switch (expr->type) {
+        case EXPR_NUMBER:
+        case EXPR_STRING:
+        case EXPR_BOOL:
+        case EXPR_NIL:
+            print_literal(expr);
+            break;
+
+        case EXPR_GROUPING:
+            printf("(group ");
+            print_expr(expr->grouping);
+            printf(")");
+            break;
+
+        case EXPR_UNARY:
+            printf("(%s ", expr->unary.op->value);
+            print_expr(expr->unary.rhs);
+            printf(")");
+            break;
+
+        case EXPR_BINARY:
+            printf("(%s ", expr->binary.op->value);
+            print_expr(expr->binary.lhs);
+            printf(" ");
+            print_expr(expr->binary.rhs);
+            printf(")");
+            break;
+
+        case EXPR_NONE:
+        default:
+            printf("None");
+            break;
+    }
+}
