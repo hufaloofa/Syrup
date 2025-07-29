@@ -13,6 +13,8 @@ typedef struct {
     bool eof;
 } Parser;
 
-Expr *parse(Parser *p, Token *tokens);
+void initParser(Token *ts);
+
+Expr *parse();
 
 #endif

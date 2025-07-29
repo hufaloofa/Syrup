@@ -4,11 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct {
-    char* start;
-    char* current;
-    int line;
-} Lexer;
 
 typedef enum {
     _NONE,
@@ -48,17 +43,25 @@ typedef struct {
     int capacity;
 } TokenArray;
 
-void initLexer(char* source);
-char peek();
+typedef struct {
+    char* start;
+    char* current;
+    int line;
+
+    Token *tokens;
+} Lexer;
+
+Lexer initLexer(char* source);
+char peek(Lexer *lexer);
 
 
-void skipWhiteSpace();
+void skipWhiteSpace(Lexer *lexer);
 
-Token scanToken();
+Token *scanToken(Lexer *lexer);
 
-char nextChar();
+char nextChar(Lexer *lexer);
 
-void scanTokens();
+int scanTokens(Lexer *lexer, Token *ts);
 
-Token makeToken(TokenType type, char* value);
+Token *makeToken(Lexer *lexer, TokenType type, char* value);
 #endif
