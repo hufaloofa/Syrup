@@ -78,6 +78,13 @@ Token *makeToken(Lexer *lexer, TokenType type, char* value) {
     return token;
 }
 
+Token *makeExprToken(TokenType type, char* value) {
+    Token *token = NULL;
+    token->type = type;
+    token->value = value;
+    return token;
+}
+
 Token *errorToken(Lexer *lexer, char* errorMessage) {
     Token *token = lexer->tokens++;
     token->type = _ERROR;
@@ -260,6 +267,7 @@ Token *scanToken(Lexer *lexer) {
     
     return errorToken(lexer, "What character is this? You fool!");
 }
+
 
 
 

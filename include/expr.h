@@ -10,7 +10,7 @@ typedef struct Expr Expr;
 
 
 typedef enum {
-    EXPR_NONE, //??
+    EXPR_NONE,
     EXPR_NIL, 
     EXPR_BOOL, 
     EXPR_NUMBER,  
@@ -56,5 +56,6 @@ Expr *make_nil_expr(Token *token);
 Expr *make_unary_expr(Token *op, Expr* rhs);
 Expr *make_binary_expr(Token* op, Expr* lhs, Expr* rhs);
 Expr *make_grouping_expr(Expr *inner);
+Expr *make_none_expr();
 
 #endif

@@ -57,3 +57,8 @@ Expr *make_grouping_expr(Expr *inner) {
     expr->grouping = inner;
     return expr;
 }
+
+Expr *make_none_expr() {
+    Expr *expr = make_expr(EXPR_NONE);
+    return expr;
+}

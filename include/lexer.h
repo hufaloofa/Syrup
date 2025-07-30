@@ -64,4 +64,7 @@ char nextChar(Lexer *lexer);
 int scanTokens(Lexer *lexer, Token *ts);
 
 Token *makeToken(Lexer *lexer, TokenType type, char* value);
+
+Token *makeExprToken(TokenType type, char* value);
+
 #endif
