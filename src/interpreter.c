@@ -53,6 +53,7 @@ Expr *visitExpr(Expr *expr) {
         case EXPR_BOOL:
         case EXPR_NIL:
         case EXPR_STRING:
+            return expr;
         case EXPR_UNARY:
             return visitUnaryExpr(expr);
         case EXPR_BINARY:
@@ -203,7 +204,7 @@ void *interpret(Expr *expr) {
         return NULL;
     }
 
-    
+
     switch (result->type) {
         case EXPR_NUMBER:
             printf("%g\n", result->literal.number); break;
