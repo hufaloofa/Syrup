@@ -75,7 +75,7 @@ Expr *equality(Parser *parser) {
 Expr *comparison(Parser *parser)
 {
     Expr *e = addition(parser);
-    while (parser_match(parser, 4, _GREATER, _GREATER_THAN, _LESS, _LESS_THAN)) {
+    while (parser_match(parser, 4, _GREATER, _GREATER_EQUAL, _LESS, _LESS_EQUAL)) {
         Token *op = parser->current-1;
         Expr *rhs = addition(parser);
         e = make_binary_expr(op, e, rhs);

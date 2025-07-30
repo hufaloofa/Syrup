@@ -58,4 +58,9 @@ Expr *make_binary_expr(Token* op, Expr* lhs, Expr* rhs);
 Expr *make_grouping_expr(Expr *inner);
 Expr *make_none_expr();
 
+// // only used when evaluating ast
+// Expr *make_num_expr_eval(double num);
+// Expr *make_bool_expr_eval(bool b);
+// Expr *make_string_expr_eval(char *string);
+
 #endif

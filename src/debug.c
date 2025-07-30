@@ -28,9 +28,9 @@ void print_token(Token *token) {
         case _BANG_EQUAL:  type = "_BANG_EQUAL"; break;
         case _EQUAL_EQUAL:  type = "_EQUAL_EQUAL"; break;
         case _GREATER:  type = "_GREATER"; break;
-        case _GREATER_THAN:  type = "_GREATER_THAN"; break;
+        case _GREATER_EQUAL:  type = "_GREATER_EQUAL"; break;
         case _LESS:  type = "_LESS"; break;
-        case _LESS_THAN:  type = "_LESS_THAN"; break;
+        case _LESS_EQUAL:  type = "_LESS_EQUAL"; break;
         case _IDENTIFIER:  type = "_IDENTIFIER"; break;
         case _FOR:  type = "_FOR"; break;
         case _PRINT:  type = "_PRINT"; break;

@@ -257,10 +257,10 @@ Token *scanToken(Lexer *lexer) {
             return makeToken(lexer, isEqual ? _BANG_EQUAL : _BANG, isEqual ? "!=" : "!");
         case '>':
             isEqual = match(lexer, '=');  
-            return makeToken(lexer, isEqual ? _GREATER_THAN : _GREATER, isEqual ? ">=" : ">");
+            return makeToken(lexer, isEqual ? _GREATER_EQUAL : _GREATER, isEqual ? ">=" : ">");
         case '<':
             isEqual = match(lexer, '=');
-            return makeToken(lexer, isEqual ? _LESS_THAN : _LESS, isEqual ? "<=" : "<");
+            return makeToken(lexer, isEqual ? _LESS_EQUAL : _LESS, isEqual ? "<=" : "<");
         // default:
 
     }

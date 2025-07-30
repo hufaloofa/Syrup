@@ -5,6 +5,7 @@
 #include "../include/parser.h"
 #include "../include/expr.h"
 #include "../include/debug.h"
+#include "../include/interpreter.h"
 
 #define MAX_TOKENS 1024
 
@@ -31,4 +32,9 @@ void run(char* source) {
     } else {
         printf("parsing failed XD");
     }
+
+    printf("\n");
+    printf("\n");
+    
+    interpret(ast);
 }

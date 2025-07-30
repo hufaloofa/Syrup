@@ -9,11 +9,45 @@ Expr *visitGroupingExpr(Expr *expr);
 Expr *visitUnaryExpr(Expr *expr);
 Expr *visitBinaryExpr(Expr* expr);
 
+void checkNumberOperand(Token *op, Expr *rhs) {
+    if (rhs->type == EXPR_NUMBER) return;
+    fprintf(stderr, "[line %d] Runtime error: %s\n", op->line, "Operand must be a number");
+    exit(EXIT_FAILURE);
+}
+
+void checkNumberOperands(Token *op, Expr *lhs, Expr *rhs) {
+    if (lhs->type == EXPR_NUMBER && rhs->type == EXPR_NUMBER) return;
+    fprintf(stderr, "[line %d] Runtime error: %s\n", op->line, "Operands must be a number");
+    exit(EXIT_FAILURE);
+};
+
+bool isEqual(Expr *lhs, Expr *rhs) {
+    if (lhs->type != rhs->type) return false;
+
+    switch (lhs->type) {
+        case EXPR_NIL: return true;
+        case EXPR_BOOL: return lhs->literal.boolean == rhs->literal.boolean;
+        case EXPR_NUMBER: return lhs->literal.number == rhs->literal.number;
+        case EXPR_STRING: return strcmp(lhs->literal.string, rhs->literal.string) == 0;
+        default: return false;
+    }
+}
+
+bool isTruthy(Expr *expr) {
+    if (expr->type == EXPR_NIL) return false;
+    if (expr->type == EXPR_BOOL) return expr->literal.boolean;
+    return true;
+}
+
 ExprType visitLiteralExpr(Expr expr) {
     return expr.type;
 }
 
 Expr *visitExpr(Expr *expr) {
+    if (expr == NULL) {
+        fprintf(stderr, "visitExpr: expr is NULL\n");
+        return NULL;
+    }
     switch (expr->type) {
         case EXPR_NUMBER:
         case EXPR_BOOL:
@@ -25,9 +59,9 @@ Expr *visitExpr(Expr *expr) {
             return visitBinaryExpr(expr);
         case EXPR_GROUPING:
             return visitGroupingExpr(expr);
-        default: 
+        default:
+            fprintf(stderr, "visitExpr: unknown expr type %d\n", expr->type);
             return make_none_expr();
-
     }
 }
 
@@ -35,17 +69,25 @@ Expr *visitGroupingExpr(Expr *expr) {
     return visitExpr(expr);
 };
 
-bool isTruthy(Expr *expr) {
-    if (expr->type == EXPR_NIL) return false;
-    if (expr->type == EXPR_BOOL) return expr->literal.boolean;
-    return true;
-}
-
 Expr  *visitUnaryExpr(Expr *expr) {
+    if (expr == NULL) {
+        fprintf(stderr, "visitUnaryExpr: expr is NULL\n");
+        return NULL;
+    }
+    if (expr->unary.rhs == NULL) {
+        fprintf(stderr, "visitUnaryExpr: expr->unary.rhs is NULL\n");
+        return NULL;
+    }
     Expr* rhs = visitExpr(expr->unary.rhs);
+
+    if (expr->unary.op == NULL) {
+        fprintf(stderr, "visitUnaryExpr: expr->unary.op is NULL\n");
+        return rhs;
+    }
 
     switch (expr->unary.op->type) {
         case _MINUS:
+            checkNumberOperand(expr->unary.op, rhs);
             rhs->literal.number *= -1;
             break;
         case _BANG:
@@ -59,6 +101,22 @@ Expr  *visitUnaryExpr(Expr *expr) {
 }
 
 Expr *visitBinaryExpr(Expr* expr) {
+    if (expr == NULL) {
+        fprintf(stderr, "visitBinaryExpr: expr is NULL\n");
+        return NULL;
+    }
+    if (expr->binary.lhs == NULL) {
+        fprintf(stderr, "visitBinaryExpr: expr->binary.lhs is NULL\n");
+        return NULL;
+    }
+    if (expr->binary.rhs == NULL) {
+        fprintf(stderr, "visitBinaryExpr: expr->binary.rhs is NULL\n");
+        return NULL;
+    }
+    if (expr->binary.op == NULL) {
+        fprintf(stderr, "visitBinaryExpr: expr->binary.op is NULL\n");
+        return NULL;
+    }
     Expr* lhs = visitExpr(expr->binary.lhs);
     Expr* rhs = visitExpr(expr->binary.rhs);
     Expr* result;
@@ -67,63 +125,97 @@ Expr *visitBinaryExpr(Expr* expr) {
 
     switch (expr->binary.op->type) {
         case _MINUS:
-            result = make_num_expr(
-                lhs->literal.number - rhs->literal.number, makeExprToken(_NUMBER, "1"));
+            checkNumberOperands(expr->binary.op, lhs, rhs);
+            result = make_num_expr(lhs->literal.number - rhs->literal.number, expr->binary.op);
             return result;
         case _SLASH:
-            result = make_num_expr(
-                lhs->literal.number / rhs->literal.number, makeExprToken(_NUMBER, "1"));
+            checkNumberOperands(expr->binary.op, lhs, rhs);
+            result = make_num_expr(lhs->literal.number / rhs->literal.number, expr->binary.op);
             return result;
         case _STAR:
-            result = make_num_expr(
-                lhs->literal.number * rhs->literal.number, makeExprToken(_NUMBER, "1"));
+            checkNumberOperands(expr->binary.op, lhs, rhs);
+            result = make_num_expr(lhs->literal.number * rhs->literal.number, expr->binary.op);
             return result;
         case _PLUS:
             if (lhs->type == EXPR_NUMBER && rhs->type == EXPR_NUMBER) {
-                result = make_num_expr(lhs->literal.number + rhs->literal.number, makeExprToken(_NUMBER, "1"));
+                result = make_num_expr(lhs->literal.number + rhs->literal.number, expr->binary.op);
+                return result;
             }
 
             if (lhs->type == EXPR_STRING && rhs->type == EXPR_STRING) {
                 char* combined = malloc(strlen(lhs->literal.string) + strlen(rhs->literal.string) + 1);
                 strcpy(combined, lhs->literal.string);
                 strcat(combined, rhs->literal.string);
-                result = make_string_expr(combined, makeExprToken(_STRING, "combinedString"));
+                result = make_string_expr(combined, expr->binary.op);
+                return result;
             }
-            return result;
+
+            fprintf(stderr, "[line %d] Runtime error: %s\n", expr->binary.op->line, "Operands must be two numbers or two strings");
+            exit(EXIT_FAILURE);
         case _GREATER:
+            checkNumberOperands(expr->binary.op, lhs, rhs);
             truth = lhs->literal.number > rhs->literal.number;
-            result = make_bool_expr(truth, makeExprToken(truth ? _TRUE : _FALSE, "bool"));
+            result = make_bool_expr(truth, expr->binary.op);
             return result;
-        case _GREATER_THAN:
+        case _GREATER_EQUAL:
+            checkNumberOperands(expr->binary.op, lhs, rhs);
             truth = lhs->literal.number >= rhs->literal.number;
-            result = make_bool_expr(truth, makeExprToken(truth ? _TRUE : _FALSE, "bool"));
+            result = make_bool_expr(truth, expr->binary.op);
             return result;
         case _LESS:
+            checkNumberOperands(expr->binary.op, lhs, rhs);
             truth = lhs->literal.number < rhs->literal.number;
-            result = make_bool_expr(truth, makeExprToken(truth ? _TRUE : _FALSE, "bool"));
+            result = make_bool_expr(truth, expr->binary.op);
             return result;
-        case _LESS_THAN:
+        case _LESS_EQUAL:
+            checkNumberOperands(expr->binary.op, lhs, rhs);
             truth = lhs->literal.number <= rhs->literal.number;
-            result = make_bool_expr(truth, makeExprToken(truth ? _TRUE : _FALSE, "bool"));
+            result = make_bool_expr(truth, expr->binary.op);
             return result;
         case _EQUAL_EQUAL:
-            truth = lhs->literal.number == rhs->literal.number;
-            result = make_bool_expr(truth, makeExprToken(truth ? _TRUE : _FALSE, "bool"));
+            truth = isEqual(lhs, rhs);
+            result = make_bool_expr(truth, expr->binary.op);
             return result;
         case _BANG_EQUAL:
-            truth = lhs->literal.number != rhs->literal.number;
-            result = make_bool_expr(truth, makeExprToken(truth ? _TRUE : _FALSE, "bool"));
+            truth = !isEqual(lhs, rhs);
+            result = make_bool_expr(truth, expr->binary.op);
             return result;
         case _AND:
-            truth = lhs->literal.number && rhs->literal.number;
-            result = make_bool_expr(truth, makeExprToken(truth ? _TRUE : _FALSE, "bool"));
+            truth = isTruthy(lhs) && isTruthy(rhs); // for int 0 this is not correct
+            result = make_bool_expr(truth, expr->binary.op);
             return result;
         case _OR:
-            truth = lhs->literal.number || rhs->literal.number;
-            result = make_bool_expr(truth, makeExprToken(truth ? _TRUE : _FALSE, "bool"));
+            truth = isTruthy(lhs) || isTruthy(rhs); // for int 0 this is not correct
+            result = make_bool_expr(truth, expr->binary.op);
             return result;
         default:
+            fprintf(stderr, "visitBinaryExpr: unknown binary op type %d\n", expr->binary.op->type);
             break;
     }
     return NULL;
+}
+
+void *interpret(Expr *expr) {
+    Expr *result = visitExpr(expr);
+
+    if (result == NULL) {
+        fprintf(stderr, "Interpretation failed: result is NULL\n");
+        return NULL;
+    }
+
+    
+    switch (result->type) {
+        case EXPR_NUMBER:
+            printf("%g\n", result->literal.number); break;
+        case EXPR_STRING:
+            printf("%s\n", result->literal.string); break;
+        case EXPR_BOOL:
+            printf(result->literal.boolean ? "true\n" : "false\n"); break;
+        case EXPR_NIL:
+            printf("nil\n"); break;
+        default:
+            printf("Unknown result\n"); break;
+    }
+
+    return result;
 }

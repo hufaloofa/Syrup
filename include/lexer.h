@@ -15,7 +15,7 @@ typedef enum {
 
     // one or two char 
     _BANG, _BANG_EQUAL, _EQUAL, _EQUAL_EQUAL,  _GREATER, 
-    _GREATER_THAN, _LESS, _LESS_THAN, 
+    _GREATER_EQUAL, _LESS, _LESS_EQUAL, 
 
     // literals, identifier = var name
     _STRING, _NUMBER, _IDENTIFIER,

@@ -62,3 +62,21 @@ Expr *make_none_expr() {
     Expr *expr = make_expr(EXPR_NONE);
     return expr;
 }
+
+// Expr *make_num_expr_eval(double num) {
+//     Expr *expr = make_expr(EXPR_NUMBER);
+//     expr->literal.number = num;
+//     return expr;
+// }
+
+// Expr *make_bool_expr_eval(bool b) {
+//     Expr *expr = make_expr(EXPR_BOOL);
+//     expr->literal.boolean = b;
+//     return expr;
+// }
+
+// Expr *make_string_expr_eval(char *string) {
+//     Expr *expr = make_expr(EXPR_STRING);
+//     expr->literal.string = string;
+//     return expr;
+// }
