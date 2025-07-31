@@ -131,6 +131,10 @@ Expr *visitBinaryExpr(Expr* expr) {
             return result;
         case _SLASH:
             checkNumberOperands(expr->binary.op, lhs, rhs);
+            if (rhs->literal.number == 0) {
+                fprintf(stderr, "[line %d] Runtime error: %s\n", expr->binary.op->line, "Division by zero");
+                exit(EXIT_FAILURE);
+            }
             result = make_num_expr(lhs->literal.number / rhs->literal.number, expr->binary.op);
             return result;
         case _STAR:
