@@ -25,7 +25,7 @@ void run(char* source) {
     //     print_token(t);
     // }
 
-    Expr *ast = parse(&parser);
+    Expr *ast = parse_expr(&parser);
 
     if (ast != NULL) {
         print_expr(ast);

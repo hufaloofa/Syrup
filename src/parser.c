@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+
 #include "../include/parser.h"
 #include "../include/expr.h"
 #include "../include/debug.h"
-
+#include "../util/vector.h"
+#include "../include/statement.h"
 
 Parser initParser(Token *ts) {
     Parser parser;
@@ -12,6 +14,18 @@ Parser initParser(Token *ts) {
     parser.current = parser.tokens;
     parser.eof = false;
     return parser;
+}
+
+Token peek(Parser *parser) {
+    return *parser->current;
+}
+
+bool check(Parser *parser, TokenType type) {
+    return peek(parser).type == type;
+}
+
+bool is_at_end(Parser *parser) {
+    return parser->eof;
 }
 
 Token *parser_advance(Parser *parser) {
@@ -24,13 +38,12 @@ bool parser_check(Parser *parser, TokenType type) {
     return !parser->eof && parser->current->type == type;
 }
 
-Token *consume(Parser *parser, TokenType type) {
+Token *consume(Parser *parser, TokenType type, char* message) {
     if (parser_check(parser, type)) {
         return parser_advance(parser);
     } else {
-        printf("Unexpected");
-        static Token error = {_ERROR, NULL, 0, 0};
-        return &error;
+        fprintf(stderr, "[line %d] Error: %s\n", parser->current->line, message);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -107,7 +120,7 @@ Expr *primary(Parser *parser) {
     if (parser_match(parser, 1, _STRING)) return make_string_expr(t->value, parser->current-1);
     if (parser_match(parser, 1, _LEFT_PAR)) {
         Expr *e = expression(parser);
-        consume(parser, _RIGHT_PAR);
+        consume(parser, _RIGHT_PAR, "Expected ')' after expression. Silly!");
         return make_grouping_expr(e);
     }
 
@@ -158,7 +171,7 @@ void synchronise(Parser *parser) {
     }
 }
 
-Expr *parse(Parser* parser) {
+Expr *parse_expr(Parser* parser) {
     if (parser->tokens->type == _NONE) {
         return NULL;
     }
@@ -166,5 +179,25 @@ Expr *parse(Parser* parser) {
     Expr *e = expression(parser);
     return e;
 }
+
+Stmt statement(Parser *parser);
+
+Vector *parse_stmt(Parser *parser) {
+    Vector *statements = vector_construct();
+    while (!is_at_end(parser)) {
+        vector_push_back(statements, statement(parser));
+    }
+    return statements;
+}
+
+
+
+Stmt statement(Parser *parser) {
+    if (parser_match(parser, 1, _PRINT)) return printStatement();
+
+    return expressionStatement();
+}
+
+
 
 

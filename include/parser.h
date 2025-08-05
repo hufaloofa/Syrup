@@ -15,6 +15,6 @@ typedef struct {
 
 Parser initParser(Token *ts);
 
-Expr *parse(Parser *parser);
+Expr *parse_expr(Parser *parser);
 
 #endif

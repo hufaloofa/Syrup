@@ -1,6 +1,6 @@
 EXE=syrup
 
-$(EXE): src/main.c src/lexer.c src/syrup.c src/expr.c src/parser.c src/debug.c src/interpreter.c
+$(EXE): src/main.c src/lexer.c src/syrup.c src/expr.c src/parser.c src/debug.c src/interpreter.c util/vector.c
 	cc -Wall -o $@ $^
 
 format:

@@ -52,14 +52,14 @@ typedef struct {
 } Lexer;
 
 Lexer initLexer(char* source);
-char peek(Lexer *lexer);
+// char peek(Lexer *lexer);
 
 
-void skipWhiteSpace(Lexer *lexer);
+// void skipWhiteSpace(Lexer *lexer);
 
 Token *scanToken(Lexer *lexer);
 
-char nextChar(Lexer *lexer);
+// char nextChar(Lexer *lexer);
 
 int scanTokens(Lexer *lexer, Token *ts);
 
