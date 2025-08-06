@@ -7,6 +7,7 @@
 #include "../include/debug.h"
 #include "../util/vector.h"
 #include "../include/statement.h"
+#include "../include/lexer.h"
 
 Parser initParser(Token *ts) {
     Parser parser;
@@ -16,15 +17,15 @@ Parser initParser(Token *ts) {
     return parser;
 }
 
-Token peek(Parser *parser) {
+Token parser_peek(Parser *parser) {
     return *parser->current;
 }
 
 bool check(Parser *parser, TokenType type) {
-    return peek(parser).type == type;
+    return parser_peek(parser).type == type;
 }
 
-bool is_at_end(Parser *parser) {
+bool parser_is_at_end(Parser *parser) {
     return parser->eof;
 }
 
@@ -180,11 +181,15 @@ Expr *parse_expr(Parser* parser) {
     return e;
 }
 
-Stmt statement(Parser *parser);
+Stmt *statement(Parser *parser);
+Stmt *printStatement(Parser *parser);
+Stmt *expressionStatement(Parser *parser);
+
+
 
 Vector *parse_stmt(Parser *parser) {
     Vector *statements = vector_construct();
-    while (!is_at_end(parser)) {
+    while (!parser_is_at_end(parser)) {
         vector_push_back(statements, statement(parser));
     }
     return statements;
@@ -192,12 +197,23 @@ Vector *parse_stmt(Parser *parser) {
 
 
 
-Stmt statement(Parser *parser) {
-    if (parser_match(parser, 1, _PRINT)) return printStatement();
+Stmt *statement(Parser *parser) {
+    if (parser_match(parser, 1, _PRINT)) return printStatement(parser);
 
-    return expressionStatement();
+    return expressionStatement(parser);
 }
 
+Stmt *printStatement(Parser *parser) {
+    Expr *value = expression(parser);
+    consume(parser, _SEMICOLON, "Expect ';' after value.");
+    return (Stmt *)print_statement(value);
+}
+
+Stmt *expressionStatement(Parser *parser) {
+    Expr *expr = expression(parser);
+    consume(parser, _SEMICOLON, "Expect ';' after value.");
+    return (Stmt *)expression_statement(expr);
+}
 
 
 

@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "string.h"
+#include <string.h>
 
 #include "../include/interpreter.h"
 #include "../include/expr.h"
+#include "../include/statement.h"
+#include "../util/vector.h"
 
 Expr *visitGroupingExpr(Expr *expr);
 Expr *visitUnaryExpr(Expr *expr);
@@ -200,9 +202,8 @@ Expr *visitBinaryExpr(Expr* expr) {
     return NULL;
 }
 
-void *interpret(Expr *expr) {
-    Expr *result = visitExpr(expr);
-
+char *stringify(Expr *result) {
+    // char *str;
     if (result == NULL) {
         fprintf(stderr, "Interpretation failed: result is NULL\n");
         return NULL;
@@ -210,17 +211,62 @@ void *interpret(Expr *expr) {
 
 
     switch (result->type) {
-        case EXPR_NUMBER:
-            printf("%g\n", result->literal.number); break;
-        case EXPR_STRING:
-            printf("%s\n", result->literal.string); break;
-        case EXPR_BOOL:
-            printf(result->literal.boolean ? "true\n" : "false\n"); break;
-        case EXPR_NIL:
-            printf("nil\n"); break;
-        default:
-            printf("Unknown result\n"); break;
-    }
+        case EXPR_NUMBER: {
+            // printf("%g\n", result->literal.number); break;
 
+            char *str = malloc(sizeof(char) * 256);
+            sprintf(str, "%g", result->literal.number);
+            return str;
+        }
+        case EXPR_STRING:
+            // printf("%s\n", result->literal.string); break;
+            return result->literal.string;
+        case EXPR_BOOL:
+            // printf(result->literal.boolean ? "true\n" : "false\n"); break;
+            return result->literal.boolean ? "true" : "false";
+        case EXPR_NIL:
+            // printf("nil\n"); break;
+            return "nil";
+        default:
+            return "unknown result";
+    }
+}
+
+void *interpret_expr(Expr *expr) {
+    Expr *result = visitExpr(expr);
+
+    printf("%s", stringify(result));
     return result;
+}
+
+void visitExpressionStatement(ExprStmt *stmt);
+void visitPrintStatement(PrintStmt *stmt);
+
+void execute_stmt(Stmt *stmt) {
+    switch (stmt->type) {
+        case STMT_EXPRESSION:
+            visitExpressionStatement((ExprStmt *)stmt);
+            break;
+        case STMT_PRINT: 
+            visitPrintStatement((PrintStmt *)stmt);
+            break;
+        default:
+            break;
+    }
+}
+
+void interpret_stmt(Vector* statements) {
+    size_t num_stmt = vector_size(statements);
+    for (size_t i = 0; i < num_stmt; i++) {
+        execute_stmt(vector_at(statements, i));
+    }
+}
+
+void visitExpressionStatement(ExprStmt *stmt) {
+    visitExpr(stmt->expression);
+}
+
+void visitPrintStatement(PrintStmt *stmt) {
+    Expr *value = visitExpr(stmt->expression);
+    printf("%s", stringify(value));
 }

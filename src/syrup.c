@@ -6,6 +6,8 @@
 #include "../include/expr.h"
 #include "../include/debug.h"
 #include "../include/interpreter.h"
+#include "../include/statement.h"
+#include "../util/vector.h"
 
 #define MAX_TOKENS 1024
 
@@ -25,16 +27,19 @@ void run(char* source) {
     //     print_token(t);
     // }
 
-    Expr *ast = parse_expr(&parser);
+    // Expr *ast = parse_expr(&parser);
 
-    if (ast != NULL) {
-        print_expr(ast);
-    } else {
-        printf("parsing failed XD");
-    }
+    // if (ast != NULL) {
+    //     print_expr(ast);
+    // } else {
+    //     printf("parsing failed XD");
+    // }
+    Vector *statements = parse_stmt(&parser);
 
-    printf("\n");
-    printf("\n");
+
+    // printf("\n");
+    // printf("\n");
     
-    interpret(ast);
+    // interpret_expr(ast);
+    interpret_stmt(statements);
 }

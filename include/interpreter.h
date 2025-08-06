@@ -2,9 +2,10 @@
 #define INTERPRETER_H
 
 #include "expr.h"
+#include "../util/vector.h"
 
-void *interpret(Expr *expr);
-
+void *interpret_expr(Expr *expr);
+void interpret_stmt(Vector* statements);
 
 
 

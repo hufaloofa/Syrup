@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include "lexer.h"
 #include "expr.h"
+#include "../util/vector.h"
+
 
 typedef struct {
     Token *tokens;
@@ -16,5 +18,5 @@ typedef struct {
 Parser initParser(Token *ts);
 
 Expr *parse_expr(Parser *parser);
-
+Vector *parse_stmt(Parser *parser);
 #endif

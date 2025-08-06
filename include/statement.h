@@ -2,6 +2,7 @@
 #define STATEMENT_H
 
 #include <stdlib.h>
+#include "../include/expr.h"
 
 typedef enum {
     STMT_BLOCK,
@@ -19,4 +20,16 @@ typedef struct {
     StmtType type;
 } Stmt;
 
+typedef struct {
+    Stmt base;
+    Expr *expression;
+} PrintStmt;
+
+typedef struct {
+    Stmt base;
+    Expr *expression;
+} ExprStmt;
+
+PrintStmt *print_statement(Expr* value);
+ExprStmt *expression_statement(Expr* expr);
 #endif

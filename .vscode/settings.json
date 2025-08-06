@@ -1,7 +1,8 @@
 {
   "files.associations": {
     "lexer.h": "c",
-    "parser.h": "c"
+    "parser.h": "c",
+    "__locale": "c"
   },
   "C_Cpp.errorSquiggles": "enabled"
 }
