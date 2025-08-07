@@ -63,6 +63,12 @@ Expr *make_none_expr() {
     return expr;
 }
 
+Expr *make_let_expr(char *string, Token *token) {
+    Expr *expr = make_literal_expr(EXPR_LET, token);
+    expr->literal.string = string;
+    return expr;
+}
+
 // Expr *make_num_expr_eval(double num) {
 //     Expr *expr = make_expr(EXPR_NUMBER);
 //     expr->literal.number = num;

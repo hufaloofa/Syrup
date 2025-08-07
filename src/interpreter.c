@@ -6,10 +6,21 @@
 #include "../include/expr.h"
 #include "../include/statement.h"
 #include "../util/vector.h"
+#include "../include/environment.h"
 
 Expr *visitGroupingExpr(Expr *expr);
 Expr *visitUnaryExpr(Expr *expr);
 Expr *visitBinaryExpr(Expr* expr);
+Expr *visitLetExpr(Expr *expr);
+
+struct {
+    Env *environment;
+} interpreter;
+
+void init() {
+    interpreter.environment = env_create(NULL);
+}
+
 
 void checkNumberOperand(Token *op, Expr *rhs) {
     if (rhs->type == EXPR_NUMBER) return;
@@ -62,6 +73,8 @@ Expr *visitExpr(Expr *expr) {
             return visitBinaryExpr(expr);
         case EXPR_GROUPING:
             return visitGroupingExpr(expr);
+        case EXPR_LET:
+            return visitLetExpr(expr);
         default:
             fprintf(stderr, "visitExpr: unknown expr type %d\n", expr->type);
             return make_none_expr();
@@ -101,6 +114,10 @@ Expr  *visitUnaryExpr(Expr *expr) {
     }
 
     return rhs;
+}
+
+Expr *visitLetExpr(Expr *expr) {
+    return env_get(interpreter.environment, expr->literal.token);
 }
 
 Expr *visitBinaryExpr(Expr* expr) {
@@ -241,6 +258,7 @@ void *interpret_expr(Expr *expr) {
 
 void visitExpressionStatement(ExprStmt *stmt);
 void visitPrintStatement(PrintStmt *stmt);
+void visitLetStatement(LetStmt *stmt);
 
 void execute_stmt(Stmt *stmt) {
     switch (stmt->type) {
@@ -250,12 +268,15 @@ void execute_stmt(Stmt *stmt) {
         case STMT_PRINT: 
             visitPrintStatement((PrintStmt *)stmt);
             break;
+        case STMT_LET:
+            visitLetStatement((LetStmt *)stmt);
         default:
             break;
     }
 }
 
 void interpret_stmt(Vector* statements) {
+    init();
     size_t num_stmt = vector_size(statements);
     for (size_t i = 0; i < num_stmt; i++) {
         execute_stmt(vector_at(statements, i));
@@ -269,4 +290,13 @@ void visitExpressionStatement(ExprStmt *stmt) {
 void visitPrintStatement(PrintStmt *stmt) {
     Expr *value = visitExpr(stmt->expression);
     printf("%s", stringify(value));
+}
+
+void visitLetStatement(LetStmt *stmt) {
+    Expr* value = NULL;
+    if (stmt->initialiser != NULL) {
+        value = visitExpr(stmt->initialiser);
+    }
+
+    env_define(interpreter.environment, stmt->name->value, value);
 }

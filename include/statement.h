@@ -12,7 +12,7 @@ typedef enum {
     STMT_IF,
     STMT_PRINT,
     STMT_RETURN,
-    STMT_VAR,
+    STMT_LET,
     STMT_WHILE,
 } StmtType;
 
@@ -30,6 +30,14 @@ typedef struct {
     Expr *expression;
 } ExprStmt;
 
-PrintStmt *print_statement(Expr* value);
-ExprStmt *expression_statement(Expr* expr);
+typedef struct {
+    Stmt base;
+    Token *name;
+    Expr *initialiser;
+} LetStmt;
+
+PrintStmt *make_print_statement(Expr* value);
+ExprStmt *make_expression_statement(Expr* expr);
+LetStmt *make_let_statement(Token *name, Expr *initialiser);
+
 #endif
