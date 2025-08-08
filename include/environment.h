@@ -11,11 +11,11 @@
 typedef struct Env Env;
 
 struct Env{
-    map *values;
-    Env *parent;
+    map values;
+    Env *enclosing;
 };
 
-Env *env_create(Env *parent);
+Env *env_create(Env *enclosing);
 void env_define(Env * env, char* name, Expr *value);
 Expr *env_get(Env *env, Token *name);
 void env_assign(Env *env, Token *name, Expr *value);

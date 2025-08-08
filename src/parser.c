@@ -214,6 +214,7 @@ Stmt *printStatement(Parser *parser);
 Stmt *expressionStatement(Parser *parser);
 Stmt *declaration(Parser *parser);
 Stmt *letDeclaration(Parser *parser);
+Vector *block(Parser *parser);
 
 
 Vector *parse_stmt(Parser *parser) {
@@ -233,7 +234,7 @@ Stmt *declaration(Parser *parser) {
 Stmt *statement(Parser *parser) {
     if (parser_match(parser, 1, _PRINT)) return printStatement(parser);
     // if (parser_match(parser, 1, _LET)) return letDeclaration(parser);
-
+    if (parser_match(parser, 1, _LEFT_CURLY)) return (Stmt *)make_block_statement(block(parser));
     return expressionStatement(parser);
 }
 
@@ -260,4 +261,14 @@ Stmt *letDeclaration(Parser *parser) {
     return (Stmt *)make_let_statement(name, initialiser);
 }
 
+Vector *block(Parser *parser) {
+    Vector *statements = vector_construct();
+
+    while (!parser_check(parser, _RIGHT_CURLY) && !parser_is_at_end(parser)) {
+        vector_push_back(statements, declaration(parser));
+    }
+
+    consume(parser, _RIGHT_CURLY, "Expect '}' after block.");
+    return statements;
+};
 

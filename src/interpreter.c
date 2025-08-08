@@ -16,6 +16,7 @@ Expr *visitAssignExpr(Expr *expr);
 
 struct {
     Env *environment;
+    Env *global;
 } interpreter;
 
 void init() {
@@ -260,27 +261,27 @@ char *stringify(Expr *result) {
 
 void *interpret_expr(Expr *expr) {
     Expr *result = visitExpr(expr);
-
     printf("%s", stringify(result));
     return result;
 }
 
-void visitExpressionStatement(ExprStmt *stmt);
-void visitPrintStatement(PrintStmt *stmt);
-void visitLetStatement(LetStmt *stmt);
+Expr *visitExpressionStatement(ExprStmt *stmt);
+Expr *visitPrintStatement(PrintStmt *stmt);
+Expr *visitLetStatement(LetStmt *stmt);
+Expr *visitBlockStatement(BlockStmt *stmt);
 
-void execute_stmt(Stmt *stmt) {
+Expr *execute_stmt(Stmt *stmt) {
     switch (stmt->type) {
+        case STMT_BLOCK:
+            return visitBlockStatement((BlockStmt *)stmt);
         case STMT_EXPRESSION:
-            visitExpressionStatement((ExprStmt *)stmt);
-            break;
+            return visitExpressionStatement((ExprStmt *)stmt);
         case STMT_PRINT: 
-            visitPrintStatement((PrintStmt *)stmt);
-            break;
+            return visitPrintStatement((PrintStmt *)stmt);
         case STMT_LET:
-            visitLetStatement((LetStmt *)stmt);
+            return visitLetStatement((LetStmt *)stmt);
         default:
-            break;
+            return NULL;
     }
 }
 
@@ -292,21 +293,41 @@ void interpret_stmt(Vector* statements) {
     }
 }
 
-void visitExpressionStatement(ExprStmt *stmt) {
+Expr *visitExpressionStatement(ExprStmt *stmt) {
     visitExpr(stmt->expression);
+    return NULL;
 }
 
-void visitPrintStatement(PrintStmt *stmt) {
+Expr *visitPrintStatement(PrintStmt *stmt) {
     Expr *value = visitExpr(stmt->expression);
     printf("%s", stringify(value));
+    return NULL;
 }
 
-void visitLetStatement(LetStmt *stmt) {
+Expr *visitLetStatement(LetStmt *stmt) {
     Expr* value = NULL;
     if (stmt->initialiser != NULL) {
         value = visitExpr(stmt->initialiser);
     }
 
     env_define(interpreter.environment, stmt->name->value, value);
+    return NULL;
 }
 
+Expr *executeBlock(Vector *statements, Env *env) {
+    Env *prev = interpreter.environment;
+    interpreter.environment = env;
+    Expr *result = NULL;
+
+    size_t num = vector_size(statements);
+    for (size_t i=0; i < num; i++) {
+        result = execute_stmt(vector_at(statements, i));
+        if (result != NULL) break;
+    }
+    interpreter.environment = prev;
+    return result;
+};
+
+Expr *visitBlockStatement(BlockStmt *stmt) {
+    return executeBlock(stmt->statements, env_create(interpreter.environment));
+}

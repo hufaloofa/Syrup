@@ -2,6 +2,7 @@
 
 #include "../include/statement.h"
 #include "../include/expr.h"
+#include "../util/vector.h"
 
 PrintStmt *make_print_statement(Expr* value) {
     PrintStmt *print_statement = malloc(sizeof(PrintStmt));
@@ -25,3 +26,9 @@ LetStmt *make_let_statement(Token *name, Expr *initialiser) {
     return let_statement;
 }
 
+BlockStmt *make_block_statement(Vector* statements) {
+    BlockStmt *block_statement = malloc(sizeof(BlockStmt));
+    block_statement->base.type = STMT_BLOCK;
+    block_statement->statements = statements;
+    return block_statement;
+}

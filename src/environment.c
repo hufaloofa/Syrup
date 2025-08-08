@@ -5,10 +5,10 @@
 #include "../include/environment.h"
 #include "../util/map.h"
 
-Env *env_create(Env *parent) {
+Env *env_create(Env *enclosing) {
     Env *env = malloc(sizeof(Env));
     env->values = map_create();
-    env->parent = parent;
+    env->enclosing = enclosing;
     return env;
 }
 
@@ -20,6 +20,9 @@ Expr *env_get(Env *env, Token *name) {
     if (map_contains(env->values, name->value)) {
         return map_get(env->values, name->value);
     }
+
+    if (env->enclosing != NULL) return env_get(env->enclosing, name);
+
     fprintf(stderr, "[line %d] Runtime error: %s %s\n", name->line, "Undefined variable", name->value);
     exit(EXIT_FAILURE);
 }
@@ -27,10 +30,15 @@ Expr *env_get(Env *env, Token *name) {
 void env_assign(Env *env, Token *name, Expr *value) {
     if (map_contains(env->values, name->value)) {
         map_set(env->values, name->value, value);
-    } else {
-        fprintf(stderr, "[line %d] Runtime error: %s %s\n", name->line, "Undefined variable", name->value);
-        exit(EXIT_FAILURE);
+        return;
+    } 
+    if (env->enclosing != NULL) {
+        env_assign(env->enclosing, name, value);
+        return;
     }
+    fprintf(stderr, "[line %d] Runtime error: %s %s\n", name->line, "Undefined variable", name->value);
+    exit(EXIT_FAILURE);
+    
 }
 
 
