@@ -18,5 +18,6 @@ struct Env{
 Env *env_create(Env *parent);
 void env_define(Env * env, char* name, Expr *value);
 Expr *env_get(Env *env, Token *name);
+void env_assign(Env *env, Token *name, Expr *value);
 
 #endif

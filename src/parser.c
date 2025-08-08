@@ -77,9 +77,10 @@ Expr *multiplication(Parser *parser);
 Expr *unary(Parser *parser);
 Expr *binary(Parser *parser);
 Expr *primary(Parser *parser);
+Expr *assignment(Parser *parser);
 
 Expr *expression(Parser *parser) {
-    return equality(parser);
+    return assignment(parser);
 }
 
 Expr *equality(Parser *parser) {
@@ -91,6 +92,25 @@ Expr *equality(Parser *parser) {
         expr = make_binary_expr(op, expr, rhs);
     }
     return expr;
+}
+
+Expr *assignment(Parser *parser) {
+    Expr *expr = equality(parser);
+
+    if (parser_match(parser, 1, _EQUAL)) {
+        Token *equals = parser->current-1;
+        Expr *value = assignment(parser);
+
+        if (expr->type == EXPR_LET) {
+            Token *name = ((Expr *)expr)->literal.token;
+            return make_assign_expr(name, value);
+        }
+
+        fprintf(stderr, "%s is an invalid assignment target\n", equals->value);
+        exit(EXIT_FAILURE);
+    }
+
+    return expr;    
 }
 
 Expr *comparison(Parser *parser)

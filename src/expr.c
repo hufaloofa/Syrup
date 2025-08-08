@@ -69,6 +69,12 @@ Expr *make_let_expr(char *string, Token *token) {
     return expr;
 }
 
+Expr *make_assign_expr(Token *name, Expr *value) {
+    Expr *expr = make_literal_expr(EXPR_ASSIGN, name);
+    expr->value = value;
+    return expr;
+}
+
 // Expr *make_num_expr_eval(double num) {
 //     Expr *expr = make_expr(EXPR_NUMBER);
 //     expr->literal.number = num;

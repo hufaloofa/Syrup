@@ -12,6 +12,7 @@ Expr *visitGroupingExpr(Expr *expr);
 Expr *visitUnaryExpr(Expr *expr);
 Expr *visitBinaryExpr(Expr* expr);
 Expr *visitLetExpr(Expr *expr);
+Expr *visitAssignExpr(Expr *expr);
 
 struct {
     Env *environment;
@@ -75,6 +76,8 @@ Expr *visitExpr(Expr *expr) {
             return visitGroupingExpr(expr);
         case EXPR_LET:
             return visitLetExpr(expr);
+        case EXPR_ASSIGN:
+            return visitAssignExpr(expr);
         default:
             fprintf(stderr, "visitExpr: unknown expr type %d\n", expr->type);
             return make_none_expr();
@@ -118,6 +121,12 @@ Expr  *visitUnaryExpr(Expr *expr) {
 
 Expr *visitLetExpr(Expr *expr) {
     return env_get(interpreter.environment, expr->literal.token);
+}
+
+Expr *visitAssignExpr(Expr *expr) {
+    Expr* value = visitExpr(expr->value);
+    env_assign(interpreter.environment, expr->literal.token, value);
+    return value;
 }
 
 Expr *visitBinaryExpr(Expr* expr) {
@@ -300,3 +309,4 @@ void visitLetStatement(LetStmt *stmt) {
 
     env_define(interpreter.environment, stmt->name->value, value);
 }
+

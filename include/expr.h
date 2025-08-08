@@ -18,7 +18,8 @@ typedef enum {
     EXPR_UNARY,
     EXPR_BINARY,
     EXPR_GROUPING,
-    EXPR_LET
+    EXPR_LET,
+    EXPR_ASSIGN
 } ExprType;
 
 struct Expr{
@@ -46,6 +47,9 @@ struct Expr{
 
         Expr *grouping;
     };
+
+    //assignment only
+    Expr *value;
 };
 
 static Expr NoneExpr  = { .type = EXPR_NONE };
@@ -60,6 +64,7 @@ Expr *make_grouping_expr(Expr *inner);
 Expr *make_none_expr();
 
 Expr *make_let_expr(char *string, Token *token);
+Expr *make_assign_expr(Token *name, Expr *value);
 
 // // only used when evaluating ast
 // Expr *make_num_expr_eval(double num);

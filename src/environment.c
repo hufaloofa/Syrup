@@ -24,5 +24,14 @@ Expr *env_get(Env *env, Token *name) {
     exit(EXIT_FAILURE);
 }
 
+void env_assign(Env *env, Token *name, Expr *value) {
+    if (map_contains(env->values, name->value)) {
+        map_set(env->values, name->value, value);
+    } else {
+        fprintf(stderr, "[line %d] Runtime error: %s %s\n", name->line, "Undefined variable", name->value);
+        exit(EXIT_FAILURE);
+    }
+}
+
 
 
