@@ -54,7 +54,7 @@ bool parser_match(Parser *parser, int count, ...) {
     for (int i = 0; i < count; i++) {
         TokenType tt = va_arg(token_types, TokenType);
         if (parser_check(parser, tt)) {
-            va_end(token_types);      // <- important
+            va_end(token_types);
             parser_advance(parser);
             return true;
         }
@@ -113,6 +113,42 @@ Expr *assignment(Parser *parser) {
         fprintf(stderr, "%s is an invalid assignment target\n", equals->value);
         exit(EXIT_FAILURE);
     }
+
+    if (parser_match(parser, 4, _PLUS_EQUAL, _MINUS_EQUAL, _STAR_EQUAL, _SLASH_EQUAL)) {
+    Token *op = parser->current - 1;
+
+    if (expr->type != EXPR_LET) {
+        fprintf(stderr, "%s is an invalid assignment target\n", op->value);
+        exit(EXIT_FAILURE);
+    }
+
+    Expr *rhs = assignment(parser);
+
+    // map
+    TokenType opType;
+    switch (op->type) {
+        case _PLUS_EQUAL:  opType = _PLUS;  break;
+        case _MINUS_EQUAL: opType = _MINUS; break;
+        case _STAR_EQUAL:  opType = _STAR;  break;
+        case _SLASH_EQUAL: opType = _SLASH; break;
+        default:
+            fprintf(stderr, "Unknown op assignment\n");
+            exit(EXIT_FAILURE);
+    }
+
+    // LHS variable token
+    Token *name = expr->literal.token;
+    Expr *leftVar = expr;
+
+    // make a copy of op
+    Token *opToken = malloc(sizeof(Token));
+    opToken = op;         
+    opToken->type = opType;        
+
+    Expr *binary = make_binary_expr(opToken, leftVar, rhs);
+    return make_assign_expr(name, binary);
+}
+
 
     return expr;    
 }

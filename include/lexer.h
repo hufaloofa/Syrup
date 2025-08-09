@@ -62,6 +62,8 @@ Token *scanToken(Lexer *lexer);
 
 // char nextChar(Lexer *lexer);
 
+Token *copyToken(Token *src);
+
 int scanTokens(Lexer *lexer, Token *ts);
 
 Token *makeToken(Lexer *lexer, TokenType type, char* value);
