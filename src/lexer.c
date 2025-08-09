@@ -78,45 +78,6 @@ Token *makeToken(Lexer *lexer, TokenType type, char* value) {
     return token;
 }
 
-Token *makeExprToken(TokenType type, char* value) {
-    Token *token = NULL;
-    token->type = type;
-    token->value = value;
-    return token;
-}
-
-Token *copyToken(Token *src) {
-    Token *copy = malloc(sizeof(Token));
-    if (!copy) {
-        perror("malloc");
-        exit(EXIT_FAILURE);
-    }
-
-    copy->type   = src->type;
-    copy->length = src->length;
-    copy->line   = src->line;
-
-    // Copy start (optional — often this just points into source code buffer)
-    if (src->start) {
-        copy->start = malloc(src->length + 1);
-        memcpy(copy->start, src->start, src->length);
-        copy->start[src->length] = '\0';
-    } else {
-        copy->start = NULL;
-    }
-
-    // Copy value string
-    if (src->value) {
-        size_t len = strlen(src->value);
-        copy->value = malloc(len + 1);
-        strcpy(copy->value, src->value);
-    } else {
-        copy->value = NULL;
-    }
-
-    return copy;
-}
-
 Token *errorToken(Lexer *lexer, char* errorMessage) {
     Token *token = lexer->tokens++;
     token->type = _ERROR;
