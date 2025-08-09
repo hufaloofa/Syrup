@@ -63,13 +63,6 @@ bool parser_match(Parser *parser, int count, ...) {
     return false;
 }
 
-
-// bool parser_match(Parser *parser, TokenType type) {
-//     if (!check(parser, type)) return false;
-//     parser_advance(parser);
-//     return true;
-// }
-
 // a lot of overlap so defined first
 
 Expr *expression(Parser *parser);
