@@ -176,6 +176,8 @@ TokenType identifierType(Lexer *lexer) {
             return checkWord(lexer, 1, 5, "eturn", _RETURN);
         case 't':
             return checkWord(lexer, 1, 3, "rue", _TRUE);
+        case 'w':
+            return checkWord(lexer, 1, 4, "hile", _WHILE);
         default:
             return _IDENTIFIER;
 

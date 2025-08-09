@@ -1,5 +1,5 @@
-print true or false;
-print true and false;
-print true or true;
-print true and true;
-print false and false;
+let a = 3;
+while (a != 0) {
+    print a;
+    a = a-1;
+}

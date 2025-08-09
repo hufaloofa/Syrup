@@ -41,3 +41,11 @@ IfStmt *make_if_statement(Expr *condition, Stmt *thenBranch, Stmt *elseBranch) {
     return if_statement;
 }
 
+WhileStmt *make_while_statement(Expr *condition, Stmt *body) {
+    WhileStmt *while_statement = malloc(sizeof(WhileStmt));
+    while_statement->base.type = STMT_WHILE;
+    while_statement->condition = condition;
+    while_statement->body = body;
+    return while_statement;
+}
+

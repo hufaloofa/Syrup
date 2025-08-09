@@ -285,6 +285,7 @@ Expr *visitIfStatement(IfStmt *stmt);
 Expr *visitPrintStatement(PrintStmt *stmt);
 Expr *visitLetStatement(LetStmt *stmt);
 Expr *visitBlockStatement(BlockStmt *stmt);
+Expr *visitWhileStatement(WhileStmt *stmt);
 
 Expr *execute_stmt(Stmt *stmt) {
     switch (stmt->type) {
@@ -298,6 +299,8 @@ Expr *execute_stmt(Stmt *stmt) {
             return visitLetStatement((LetStmt *)stmt);
         case STMT_IF:
             return visitIfStatement((IfStmt *)stmt);
+        case STMT_WHILE:
+            return visitWhileStatement((WhileStmt *)stmt);
         default:
             return NULL;
     }
@@ -324,6 +327,15 @@ Expr *visitIfStatement(IfStmt *stmt) {
     }
     return NULL;
 }
+
+Expr *visitWhileStatement(WhileStmt *stmt) {
+    while (isTruthy(evaluateExpr(stmt->condition))) {
+        execute_stmt(stmt->body);
+    }
+
+    return NULL;
+}
+
 
 Expr *visitPrintStatement(PrintStmt *stmt) {
     Expr *value = evaluateExpr(stmt->expression);

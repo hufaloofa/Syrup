@@ -242,6 +242,7 @@ Stmt *declaration(Parser *parser);
 Stmt *letDeclaration(Parser *parser);
 Vector *block(Parser *parser);
 Stmt *ifStatement(Parser *parser);
+Stmt *whileStatement(Parser *parser);
 
 
 Vector *parse_stmt(Parser *parser) {
@@ -263,13 +264,14 @@ Stmt *statement(Parser *parser) {
     // if (parser_match(parser, 1, _LET)) return letDeclaration(parser);
     if (parser_match(parser, 1, _LEFT_CURLY)) return (Stmt *)make_block_statement(block(parser));
     if (parser_match(parser, 1, _IF)) return ifStatement(parser);
+    if (parser_match(parser, 1, _WHILE)) return whileStatement(parser);
     return expressionStatement(parser);
 }
 
 Stmt *ifStatement(Parser *parser) {
-    consume(parser, _LEFT_PAR, "Expect '(' after 'if'.");
+    consume(parser, _LEFT_PAR, "Expect '(' after 'while'.");
     Expr *condition = expression(parser);
-    consume(parser, _RIGHT_PAR, "Expect ')' after 'if' condition.");
+    consume(parser, _RIGHT_PAR, "Expect ')' after condition.");
 
     Stmt *thenBranch = statement(parser);
     Stmt *elseBranch = NULL;
@@ -279,6 +281,16 @@ Stmt *ifStatement(Parser *parser) {
 
     return (Stmt *)make_if_statement(condition, thenBranch, elseBranch);
 
+}
+
+Stmt *whileStatement(Parser *parser) {
+    consume(parser, _LEFT_PAR, "Expect '(' after 'if'.");
+    Expr *condition = expression(parser);
+    consume(parser, _RIGHT_PAR, "Expect ')' after 'if' condition.");
+
+    Stmt *body = statement(parser);
+
+    return (Stmt *)make_while_statement(condition, body);
 }
 
 Stmt *printStatement(Parser *parser) {
