@@ -21,6 +21,7 @@ typedef enum {
     EXPR_LET,
     EXPR_ASSIGN,
     EXPR_LOGICAL,
+    EXPR_POSTFIX,
 } ExprType;
 
 struct Expr{
@@ -53,6 +54,11 @@ struct Expr{
         } logical;
 
         Expr *grouping;
+
+        struct {
+            Expr *lhs;
+            Token *op;
+        } postfix;
     };
 
     //assignment only
@@ -69,6 +75,7 @@ Expr *make_unary_expr(Token *op, Expr* rhs);
 Expr *make_binary_expr(Token* op, Expr* lhs, Expr* rhs);
 Expr *make_grouping_expr(Expr *inner);
 Expr *make_none_expr();
+Expr *make_postfix_expr(Token *op, Expr* lhs);
 
 Expr *make_let_expr(char *string, Token *token);
 Expr *make_assign_expr(Token *name, Expr *value);

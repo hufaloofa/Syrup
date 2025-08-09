@@ -83,6 +83,13 @@ Expr *make_logical_expr(Expr *left, Token *op, Expr *right) {
     return expr;
 }
 
+Expr *make_postfix_expr(Token *op, Expr* lhs) {
+    Expr *expr = make_expr(EXPR_POSTFIX);
+    expr->postfix.lhs = lhs;
+    expr->postfix.op = op;
+    return expr;
+}
+
 // Expr *make_num_expr_eval(double num) {
 //     Expr *expr = make_expr(EXPR_NUMBER);
 //     expr->literal.number = num;

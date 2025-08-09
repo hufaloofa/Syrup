@@ -220,7 +220,6 @@ Token *scanToken(Lexer *lexer) {
     lexer->start = lexer->current;
     if (isAtEnd(lexer)) return makeToken(lexer, _EOF, "\0");
     char c = nextChar(lexer); // goes to next char but returns "current char"
-    bool isEqual;
     if (isAlpha(c)) {
         return identifier(lexer);
     }
@@ -240,38 +239,43 @@ Token *scanToken(Lexer *lexer) {
         case '}':
             return makeToken(lexer, _RIGHT_CURLY, "}");
         case '+':
+            if (match(lexer, '+')) return makeToken(lexer, _PLUS_PLUS, "++");
+            if (match(lexer, '=')) return makeToken(lexer, _PLUS_EQUAL, "+=");
             return makeToken(lexer, _PLUS, "+");
         case '-':
+            if (match(lexer, '-')) return makeToken(lexer, _MINUS_MINUS, "--");
+            if (match(lexer, '=')) return makeToken(lexer, _MINUS_EQUAL, "-=");
             return makeToken(lexer, _MINUS, "-");
         case '=':
-            isEqual = match(lexer, '=');
-            return makeToken(lexer, isEqual ? _EQUAL_EQUAL : _EQUAL, isEqual ? "==" : "=");
+            if (match(lexer, '=')) return makeToken(lexer, _EQUAL_EQUAL, "==");
+            return makeToken(lexer, _EQUAL, "=");
         case '"':
             return string(lexer);
         case ',':
             return makeToken(lexer, _COMMA, ",");
         case '/':
+            if (match(lexer, '=')) return makeToken(lexer, _SLASH_EQUAL, "/=");
             return makeToken(lexer, _SLASH, "/");
         case '*':
+            if (match(lexer, '=')) return makeToken(lexer, _STAR_EQUAL, "*=");
             return makeToken(lexer, _STAR, "*");
         case '.':
             return makeToken(lexer, _DOT, ".");
         case '!':
-            isEqual = match(lexer, '=');
-            return makeToken(lexer, isEqual ? _BANG_EQUAL : _BANG, isEqual ? "!=" : "!");
+            if (match(lexer, '=')) return makeToken(lexer, _BANG_EQUAL, "!=");
+            return makeToken(lexer, _BANG, "!");
         case '>':
-            isEqual = match(lexer, '=');  
-            return makeToken(lexer, isEqual ? _GREATER_EQUAL : _GREATER, isEqual ? ">=" : ">");
+            if (match(lexer, '=')) return makeToken(lexer, _GREATER_EQUAL, ">=");
+            return makeToken(lexer, _GREATER, ">");
         case '<':
-            isEqual = match(lexer, '=');
-            return makeToken(lexer, isEqual ? _LESS_EQUAL : _LESS, isEqual ? "<=" : "<");
+            if (match(lexer, '=')) return makeToken(lexer, _LESS_EQUAL, "<=");
+            return makeToken(lexer, _LESS, "<");
         // default:
 
     }
     
     return errorToken(lexer, "What character is this? You fool!");
 }
-
 
 
 

@@ -10,12 +10,13 @@ typedef enum {
 
     // single char tokens   
     _SEMICOLON, _LEFT_PAR, _RIGHT_PAR, _LEFT_CURLY, _RIGHT_CURLY, 
-    _SLASH, _PLUS, _MINUS, _COMMA, _STAR, 
-    _DOT,
+    _COMMA, _DOT,
 
     // one or two char 
     _BANG, _BANG_EQUAL, _EQUAL, _EQUAL_EQUAL,  _GREATER, 
-    _GREATER_EQUAL, _LESS, _LESS_EQUAL, 
+    _GREATER_EQUAL, _LESS, _LESS_EQUAL, _PLUS, _MINUS, 
+    _PLUS_PLUS, _MINUS_MINUS, _PLUS_EQUAL, _MINUS_EQUAL, 
+    _STAR, _STAR_EQUAL, _SLASH, _SLASH_EQUAL,
 
     // literals, identifier = var name
     _STRING, _NUMBER, _IDENTIFIER,

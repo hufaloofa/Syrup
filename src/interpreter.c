@@ -14,6 +14,7 @@ Expr *visitBinaryExpr(Expr* expr);
 Expr *visitLetExpr(Expr *expr);
 Expr *visitAssignExpr(Expr *expr);
 Expr *evaluateExpr(Expr *expr);
+Expr *visitPostfixExpr(Expr *expr);
 
 struct {
     Env *environment;
@@ -84,6 +85,8 @@ Expr *evaluateExpr(Expr *expr) {
             return expr;
         case EXPR_UNARY:
             return visitUnaryExpr(expr);
+        case EXPR_POSTFIX:
+            return visitPostfixExpr(expr);
         case EXPR_BINARY:
             return visitBinaryExpr(expr);
         case EXPR_GROUPING:
@@ -128,12 +131,53 @@ Expr  *visitUnaryExpr(Expr *expr) {
         case _BANG:
             rhs->literal.boolean = !isTruthy(rhs);
             break;
+        case _PLUS_PLUS:
+            checkNumberOperand(expr->unary.op, rhs);
+            ++(rhs->literal.number);
+            break;
+        case _MINUS_MINUS:
+            checkNumberOperand(expr->unary.op, rhs);
+            --(rhs->literal.number);
+            break;
         default:
             break;
     }
 
     return rhs;
 }
+
+Expr *visitPostfixExpr(Expr *expr) {
+    if (expr == NULL) {
+        fprintf(stderr, "visitPostfixExpr: expr is NULL\n");
+        return NULL;
+    }
+    if (expr->postfix.lhs == NULL) {
+        fprintf(stderr, "visitPostfixExpr: expr->postfix.lhs is NULL\n");
+        return NULL;
+    }
+    Expr* lhs = evaluateExpr(expr->postfix.lhs);
+
+    if (expr->postfix.op == NULL) {
+        fprintf(stderr, "visitPostfixExpr: expr->postfix.op is NULL\n");
+        return lhs;
+    }
+
+    switch (expr->postfix.op->type) {
+        case _PLUS_PLUS:
+            checkNumberOperand(expr->postfix.op, lhs);
+            (lhs->literal.number)++;
+            break;
+        case _MINUS_MINUS:
+            checkNumberOperand(expr->postfix.op, lhs);
+            (lhs->literal.number)--;
+            break;
+        default:
+            break;
+    }
+
+    return lhs;
+}
+
 
 Expr *visitLetExpr(Expr *expr) {
     return env_get(interpreter.environment, expr->literal.token);

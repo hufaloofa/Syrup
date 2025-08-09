@@ -82,6 +82,7 @@ Expr *primary(Parser *parser);
 Expr *assignment(Parser *parser);
 Expr *or(Parser *parser);
 Expr *and(Parser *parser);
+Expr *postfix(Parser *parser);
 
 Expr *expression(Parser *parser) {
     return assignment(parser);
@@ -151,13 +152,22 @@ Expr *comparison(Parser *parser)
 }
 
 Expr *unary(Parser *parser) {
-    if (parser_match(parser, 2, _BANG, _MINUS)) {
+    if (parser_match(parser, 4, _BANG, _MINUS, _PLUS_PLUS, _MINUS_MINUS)) {
         Token* op = parser->current-1;
         Expr *rhs = unary(parser);
         return make_unary_expr(op, rhs);
     }
 
-    return primary(parser);
+    return postfix(parser);
+}
+
+Expr *postfix(Parser *parser) {
+    Expr *expr = primary(parser);
+    if (parser_match(parser, 2, _PLUS_PLUS, _MINUS_MINUS)) { 
+        Token* op = parser->current - 1; 
+        expr = make_postfix_expr(op, expr); 
+    }
+    return expr;
 }
 
 Expr *primary(Parser *parser) {
@@ -376,4 +386,3 @@ Vector *block(Parser *parser) {
     consume(parser, _RIGHT_CURLY, "Expect '}' after block.");
     return statements;
 };
-
