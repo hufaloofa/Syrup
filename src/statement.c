@@ -32,3 +32,12 @@ BlockStmt *make_block_statement(Vector* statements) {
     block_statement->statements = statements;
     return block_statement;
 }
+IfStmt *make_if_statement(Expr *condition, Stmt *thenBranch, Stmt *elseBranch) {
+    IfStmt *if_statement = malloc(sizeof(IfStmt));
+    if_statement->base.type = STMT_IF;
+    if_statement->condition = condition;
+    if_statement->elseBranch = elseBranch;
+    if_statement->thenBranch = thenBranch;
+    return if_statement;
+}
+

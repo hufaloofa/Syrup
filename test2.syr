@@ -1,5 +1,5 @@
-let a = 1;
-{
-    let a = a + 1;
-    print a;
-}
+print true or false;
+print true and false;
+print true or true;
+print true and true;
+print false and false;

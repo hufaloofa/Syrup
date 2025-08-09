@@ -13,6 +13,7 @@ Expr *visitUnaryExpr(Expr *expr);
 Expr *visitBinaryExpr(Expr* expr);
 Expr *visitLetExpr(Expr *expr);
 Expr *visitAssignExpr(Expr *expr);
+Expr *evaluateExpr(Expr *expr);
 
 struct {
     Env *environment;
@@ -58,9 +59,21 @@ ExprType visitLiteralExpr(Expr expr) {
     return expr.type;
 }
 
-Expr *visitExpr(Expr *expr) {
+Expr *visitLogicalExpr(Expr *expr) {
+    Expr* left = expr->logical.lhs;
+
+    if (expr->logical.op->type == _OR) {
+        if (isTruthy(left)) return left;
+    } else {
+        if (!isTruthy(left)) return left;
+    }
+
+    return evaluateExpr(expr->logical.rhs);
+}
+
+Expr *evaluateExpr(Expr *expr) {
     if (expr == NULL) {
-        fprintf(stderr, "visitExpr: expr is NULL\n");
+        fprintf(stderr, "evaluateExpr: expr is NULL\n");
         return NULL;
     }
     switch (expr->type) {
@@ -79,14 +92,16 @@ Expr *visitExpr(Expr *expr) {
             return visitLetExpr(expr);
         case EXPR_ASSIGN:
             return visitAssignExpr(expr);
+        case EXPR_LOGICAL:
+            return visitLogicalExpr(expr);
         default:
-            fprintf(stderr, "visitExpr: unknown expr type %d\n", expr->type);
+            fprintf(stderr, "evaluateExpr: unknown expr type %d\n", expr->type);
             return make_none_expr();
     }
 }
 
 Expr *visitGroupingExpr(Expr *expr) {
-    return visitExpr(expr);
+    return evaluateExpr(expr->grouping);
 };
 
 Expr  *visitUnaryExpr(Expr *expr) {
@@ -98,7 +113,7 @@ Expr  *visitUnaryExpr(Expr *expr) {
         fprintf(stderr, "visitUnaryExpr: expr->unary.rhs is NULL\n");
         return NULL;
     }
-    Expr* rhs = visitExpr(expr->unary.rhs);
+    Expr* rhs = evaluateExpr(expr->unary.rhs);
 
     if (expr->unary.op == NULL) {
         fprintf(stderr, "visitUnaryExpr: expr->unary.op is NULL\n");
@@ -125,7 +140,7 @@ Expr *visitLetExpr(Expr *expr) {
 }
 
 Expr *visitAssignExpr(Expr *expr) {
-    Expr* value = visitExpr(expr->value);
+    Expr* value = evaluateExpr(expr->value);
     env_assign(interpreter.environment, expr->literal.token, value);
     return value;
 }
@@ -147,8 +162,8 @@ Expr *visitBinaryExpr(Expr* expr) {
         fprintf(stderr, "visitBinaryExpr: expr->binary.op is NULL\n");
         return NULL;
     }
-    Expr* lhs = visitExpr(expr->binary.lhs);
-    Expr* rhs = visitExpr(expr->binary.rhs);
+    Expr* lhs = evaluateExpr(expr->binary.lhs);
+    Expr* rhs = evaluateExpr(expr->binary.rhs);
     Expr* result;
     bool truth;
     // double numResult;
@@ -260,12 +275,13 @@ char *stringify(Expr *result) {
 }
 
 void *interpret_expr(Expr *expr) {
-    Expr *result = visitExpr(expr);
+    Expr *result = evaluateExpr(expr);
     printf("%s", stringify(result));
     return result;
 }
 
 Expr *visitExpressionStatement(ExprStmt *stmt);
+Expr *visitIfStatement(IfStmt *stmt);
 Expr *visitPrintStatement(PrintStmt *stmt);
 Expr *visitLetStatement(LetStmt *stmt);
 Expr *visitBlockStatement(BlockStmt *stmt);
@@ -280,6 +296,8 @@ Expr *execute_stmt(Stmt *stmt) {
             return visitPrintStatement((PrintStmt *)stmt);
         case STMT_LET:
             return visitLetStatement((LetStmt *)stmt);
+        case STMT_IF:
+            return visitIfStatement((IfStmt *)stmt);
         default:
             return NULL;
     }
@@ -294,12 +312,21 @@ void interpret_stmt(Vector* statements) {
 }
 
 Expr *visitExpressionStatement(ExprStmt *stmt) {
-    visitExpr(stmt->expression);
+    evaluateExpr(stmt->expression);
+    return NULL;
+}
+
+Expr *visitIfStatement(IfStmt *stmt) {
+    if (isTruthy(evaluateExpr(stmt->condition))) {
+        execute_stmt(stmt->thenBranch);
+    } else if (stmt->elseBranch != NULL) {
+        execute_stmt(stmt->elseBranch);
+    }
     return NULL;
 }
 
 Expr *visitPrintStatement(PrintStmt *stmt) {
-    Expr *value = visitExpr(stmt->expression);
+    Expr *value = evaluateExpr(stmt->expression);
     printf("%s", stringify(value));
     return NULL;
 }
@@ -307,7 +334,7 @@ Expr *visitPrintStatement(PrintStmt *stmt) {
 Expr *visitLetStatement(LetStmt *stmt) {
     Expr* value = NULL;
     if (stmt->initialiser != NULL) {
-        value = visitExpr(stmt->initialiser);
+        value = evaluateExpr(stmt->initialiser);
     }
 
     env_define(interpreter.environment, stmt->name->value, value);

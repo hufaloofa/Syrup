@@ -75,9 +75,10 @@ Expr *equality(Parser *parser);
 Expr *addition(Parser *parser);
 Expr *multiplication(Parser *parser);
 Expr *unary(Parser *parser);
-Expr *binary(Parser *parser);
 Expr *primary(Parser *parser);
 Expr *assignment(Parser *parser);
+Expr *or(Parser *parser);
+Expr *and(Parser *parser);
 
 Expr *expression(Parser *parser) {
     return assignment(parser);
@@ -95,8 +96,8 @@ Expr *equality(Parser *parser) {
 }
 
 Expr *assignment(Parser *parser) {
-    Expr *expr = equality(parser);
-
+    Expr *expr = or(parser);
+    
     if (parser_match(parser, 1, _EQUAL)) {
         Token *equals = parser->current-1;
         Expr *value = assignment(parser);
@@ -111,6 +112,29 @@ Expr *assignment(Parser *parser) {
     }
 
     return expr;    
+}
+
+Expr *or(Parser *parser) {
+    Expr *expr = and(parser);
+
+    while (parser_match(parser, 1, _OR)) {
+        Token *op = parser->current-1;
+        Expr *right = and(parser);
+        expr = make_logical_expr(expr, op, right);
+    }
+
+    return expr;
+}
+
+Expr *and(Parser *parser) {
+    Expr *expr = equality(parser);
+    while (parser_match(parser, 1, _AND)) {
+        Token *op = parser->current-1;
+        Expr *right = equality(parser);
+        expr = make_logical_expr(expr, op, right);
+    }
+
+    return expr;
 }
 
 Expr *comparison(Parser *parser)
@@ -209,12 +233,15 @@ Expr *parse_expr(Parser* parser) {
     return e;
 }
 
+// declared first to use later
+
 Stmt *statement(Parser *parser);
 Stmt *printStatement(Parser *parser);
 Stmt *expressionStatement(Parser *parser);
 Stmt *declaration(Parser *parser);
 Stmt *letDeclaration(Parser *parser);
 Vector *block(Parser *parser);
+Stmt *ifStatement(Parser *parser);
 
 
 Vector *parse_stmt(Parser *parser) {
@@ -235,7 +262,23 @@ Stmt *statement(Parser *parser) {
     if (parser_match(parser, 1, _PRINT)) return printStatement(parser);
     // if (parser_match(parser, 1, _LET)) return letDeclaration(parser);
     if (parser_match(parser, 1, _LEFT_CURLY)) return (Stmt *)make_block_statement(block(parser));
+    if (parser_match(parser, 1, _IF)) return ifStatement(parser);
     return expressionStatement(parser);
+}
+
+Stmt *ifStatement(Parser *parser) {
+    consume(parser, _LEFT_PAR, "Expect '(' after 'if'.");
+    Expr *condition = expression(parser);
+    consume(parser, _RIGHT_PAR, "Expect ')' after 'if' condition.");
+
+    Stmt *thenBranch = statement(parser);
+    Stmt *elseBranch = NULL;
+    if (parser_match(parser, 1, _ELSE)) {
+        elseBranch = statement(parser);
+    }
+
+    return (Stmt *)make_if_statement(condition, thenBranch, elseBranch);
+
 }
 
 Stmt *printStatement(Parser *parser) {

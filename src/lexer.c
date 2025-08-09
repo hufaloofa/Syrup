@@ -162,10 +162,12 @@ TokenType identifierType(Lexer *lexer) {
                         return checkWord(lexer, 2, 1, "r", _FOR);
                 }
             }
-        case 'l':
-            return checkWord(lexer, 1, 2, "et", _LET);
         case 'i':
             return checkWord(lexer, 1, 1, "f", _IF);
+        case 'l':
+            return checkWord(lexer, 1, 2, "et", _LET);
+        case 'n':
+            return checkWord(lexer, 1, 2, "il", _NIL);
         case 'o':
             return checkWord(lexer, 1, 1, "r", _OR);
         case 'p':

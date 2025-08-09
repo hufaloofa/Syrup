@@ -42,8 +42,17 @@ typedef struct {
     Vector *statements;
 } BlockStmt;
 
+typedef struct {
+    Stmt base;
+    Expr *condition;
+    Stmt *thenBranch;
+    Stmt *elseBranch;
+} IfStmt;
+
 PrintStmt *make_print_statement(Expr* value);
 ExprStmt *make_expression_statement(Expr* expr);
 LetStmt *make_let_statement(Token *name, Expr *initialiser);
 BlockStmt *make_block_statement(Vector* statements);
+IfStmt *make_if_statement(Expr *condition, Stmt *thenBranch, Stmt *elseBranch);
+
 #endif
