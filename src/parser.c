@@ -51,8 +51,10 @@ Token *consume(Parser *parser, TokenType type, char* message) {
 bool parser_match(Parser *parser, int count, ...) {
     va_list token_types;
     va_start(token_types, count);
-    while (count--) {
-        if (parser_check(parser, va_arg(token_types, TokenType))) {
+    for (int i = 0; i < count; i++) {
+        TokenType tt = va_arg(token_types, TokenType);
+        if (parser_check(parser, tt)) {
+            va_end(token_types);      // <- important
             parser_advance(parser);
             return true;
         }
@@ -60,6 +62,7 @@ bool parser_match(Parser *parser, int count, ...) {
     va_end(token_types);
     return false;
 }
+
 
 // bool parser_match(Parser *parser, TokenType type) {
 //     if (!check(parser, type)) return false;
@@ -87,7 +90,6 @@ Expr *expression(Parser *parser) {
 Expr *equality(Parser *parser) {
     Expr *expr = comparison(parser);
     while (parser_match(parser, 2, _EQUAL_EQUAL, _BANG_EQUAL)) {
-    // while (parser_match(parser, _EQUAL_EQUAL) || parser_match(parser, _BANG_EQUAL)) {
         Token *op  = parser->current-1;
         Expr *rhs = comparison(parser);
         expr = make_binary_expr(op, expr, rhs);
@@ -243,7 +245,7 @@ Stmt *letDeclaration(Parser *parser);
 Vector *block(Parser *parser);
 Stmt *ifStatement(Parser *parser);
 Stmt *whileStatement(Parser *parser);
-
+Stmt *forStatement(Parser *parser);
 
 Vector *parse_stmt(Parser *parser) {
     Vector *statements = vector_construct();
@@ -265,11 +267,12 @@ Stmt *statement(Parser *parser) {
     if (parser_match(parser, 1, _LEFT_CURLY)) return (Stmt *)make_block_statement(block(parser));
     if (parser_match(parser, 1, _IF)) return ifStatement(parser);
     if (parser_match(parser, 1, _WHILE)) return whileStatement(parser);
+    if (parser_match(parser, 1, _FOR)) return forStatement(parser);
     return expressionStatement(parser);
 }
 
 Stmt *ifStatement(Parser *parser) {
-    consume(parser, _LEFT_PAR, "Expect '(' after 'while'.");
+    consume(parser, _LEFT_PAR, "Expect '(' after 'if'.");
     Expr *condition = expression(parser);
     consume(parser, _RIGHT_PAR, "Expect ')' after condition.");
 
@@ -284,13 +287,60 @@ Stmt *ifStatement(Parser *parser) {
 }
 
 Stmt *whileStatement(Parser *parser) {
-    consume(parser, _LEFT_PAR, "Expect '(' after 'if'.");
+    consume(parser, _LEFT_PAR, "Expect '(' after 'while'.");
     Expr *condition = expression(parser);
-    consume(parser, _RIGHT_PAR, "Expect ')' after 'if' condition.");
+    consume(parser, _RIGHT_PAR, "Expect ')' after condition.");
 
     Stmt *body = statement(parser);
 
     return (Stmt *)make_while_statement(condition, body);
+}
+
+Stmt *forStatement(Parser *parser) {
+    consume(parser, _LEFT_PAR, "Expect '(' after 'for'.");
+
+    Stmt *initialiser;
+    if (parser_match(parser, 1, _SEMICOLON)) {
+        initialiser = NULL;
+    } else if (parser_match(parser, 1, _LET)) {
+        initialiser = letDeclaration(parser);
+    } else {
+        initialiser = expressionStatement(parser);
+    }
+
+    Expr *condition = NULL;
+    if (!parser_check(parser, _SEMICOLON)) {
+        condition = expression(parser);
+    }
+    consume(parser, _SEMICOLON, "Expect ';' after loop condition.");
+
+    Expr *increment = NULL;
+    if (!parser_check(parser, _RIGHT_PAR)) {
+        increment = expression(parser);
+    }
+    consume(parser, _RIGHT_PAR, "Expect ')' after for clauses.");
+
+    Stmt *body = statement(parser);
+
+    if (increment != NULL) {
+        Vector *statements = vector_construct();
+        vector_push_back(statements, body);
+        vector_push_back(statements, make_expression_statement(increment));
+        body = (Stmt *)make_block_statement(statements);
+    }
+
+    if (condition == NULL) condition = make_bool_expr(true, parser->current);
+
+    body = (Stmt *)make_while_statement(condition, body);
+
+    if (initialiser != NULL) {
+        Vector *statements = vector_construct();
+        vector_push_back(statements, initialiser);
+        vector_push_back(statements, body);
+        body = (Stmt *)make_block_statement(statements);
+    }
+
+    return body;
 }
 
 Stmt *printStatement(Parser *parser) {
