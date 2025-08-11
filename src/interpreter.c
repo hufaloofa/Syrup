@@ -193,22 +193,6 @@ Expr *visitAssignExpr(Expr *expr) {
 }
 
 Expr *visitBinaryExpr(Expr* expr) {
-    if (expr == NULL) {
-        fprintf(stderr, "visitBinaryExpr: expr is NULL\n");
-        return NULL;
-    }
-    if (expr->binary.lhs == NULL) {
-        fprintf(stderr, "visitBinaryExpr: expr->binary.lhs is NULL\n");
-        return NULL;
-    }
-    if (expr->binary.rhs == NULL) {
-        fprintf(stderr, "visitBinaryExpr: expr->binary.rhs is NULL\n");
-        return NULL;
-    }
-    if (expr->binary.op == NULL) {
-        fprintf(stderr, "visitBinaryExpr: expr->binary.op is NULL\n");
-        return NULL;
-    }
     Expr* lhs = evaluateExpr(expr->binary.lhs);
     Expr* rhs = evaluateExpr(expr->binary.rhs);
     Expr* result;
@@ -359,6 +343,7 @@ Expr *visitLetStatement(LetStmt *stmt);
 Expr *visitBlockStatement(BlockStmt *stmt);
 Expr *visitWhileStatement(WhileStmt *stmt);
 Expr *visitFunctionStatement(FunctionStmt *stmt);
+Expr *visitReturnStatement(ReturnStmt *stmt);
 
 Expr *execute_stmt(Stmt *stmt) {
     switch (stmt->type) {
@@ -376,6 +361,8 @@ Expr *execute_stmt(Stmt *stmt) {
             return visitWhileStatement((WhileStmt *)stmt);
         case STMT_FUNCTION:
             return visitFunctionStatement((FunctionStmt *)stmt);
+        case STMT_RETURN:
+            return visitReturnStatement((ReturnStmt *)stmt);
         default:
             return NULL;
     }
@@ -404,16 +391,17 @@ Expr *visitFunctionStatement(FunctionStmt *stmt) {
 
 Expr *visitIfStatement(IfStmt *stmt) {
     if (isTruthy(evaluateExpr(stmt->condition))) {
-        execute_stmt(stmt->thenBranch);
+        return execute_stmt(stmt->thenBranch);
     } else if (stmt->elseBranch != NULL) {
-        execute_stmt(stmt->elseBranch);
+        return execute_stmt(stmt->elseBranch); 
     }
     return NULL;
 }
 
 Expr *visitWhileStatement(WhileStmt *stmt) {
     while (isTruthy(evaluateExpr(stmt->condition))) {
-        execute_stmt(stmt->body);
+        Expr *r = execute_stmt(stmt->body);
+        if (r != NULL) return r; 
     }
 
     return NULL;
@@ -424,6 +412,18 @@ Expr *visitPrintStatement(PrintStmt *stmt) {
     Expr *value = evaluateExpr(stmt->expression);
     printf("%s", stringify(value));
     return NULL;
+}
+
+Expr *visitReturnStatement(ReturnStmt *stmt) {
+    Expr *value = NULL;
+    if (stmt->value != NULL) {
+        value = evaluateExpr(stmt->value);
+    } else {
+        value = make_nil_expr(stmt->keyword);
+    }
+
+    // Return the value to the caller
+    return value;
 }
 
 Expr *visitLetStatement(LetStmt *stmt) {

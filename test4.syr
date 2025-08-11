@@ -1,6 +1,8 @@
-def procedure() {
-  print "don't return anything";
+def fib(n) {
+  if (n <= 1) return n;
+  return fib(n - 2) + fib(n - 1);
 }
 
-let result = procedure();
-print result;
+for (let i = 0; i < 20; i++) {
+  print fib(i);
+}

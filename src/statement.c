@@ -58,3 +58,12 @@ FunctionStmt *make_function_statement(Token *name, Vector *parameters, Vector *b
     return function_statement;
 }
 
+ReturnStmt *make_return_statement(Token *keyword, Expr *value) {
+    ReturnStmt *return_statement = malloc(sizeof(ReturnStmt));
+    return_statement->base.type = STMT_RETURN;
+    return_statement->keyword = keyword;
+    return_statement->value = value;
+    return return_statement;
+}
+
+

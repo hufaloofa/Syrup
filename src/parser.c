@@ -148,7 +148,7 @@ Expr *assignment(Parser *parser) {
 
     // make a copy of op
     Token *opToken = malloc(sizeof(Token));
-    opToken = op;         
+    *opToken = *op;         
     opToken->type = opType;        
 
     Expr *binary = make_binary_expr(opToken, leftVar, rhs);
@@ -329,6 +329,7 @@ Stmt *ifStatement(Parser *parser);
 Stmt *whileStatement(Parser *parser);
 Stmt *forStatement(Parser *parser);
 Stmt *function(Parser *parser, char *kind);
+Stmt *returnStatement(Parser *parser);
 
 Vector *parse_stmt(Parser *parser) {
     Vector *statements = vector_construct();
@@ -352,6 +353,7 @@ Stmt *statement(Parser *parser) {
     if (parser_match(parser, 1, _IF)) return ifStatement(parser);
     if (parser_match(parser, 1, _WHILE)) return whileStatement(parser);
     if (parser_match(parser, 1, _FOR)) return forStatement(parser);
+    if (parser_match(parser, 1, _RETURN)) return returnStatement(parser);
     return expressionStatement(parser);
 }
 
@@ -432,6 +434,18 @@ Stmt *printStatement(Parser *parser) {
     consume(parser, _SEMICOLON, "Expect ';' after value.");
     return (Stmt *)make_print_statement(value);
 }
+
+Stmt *returnStatement(Parser *parser) {
+    Token *keyword = parser->current - 1;
+    Expr *value = NULL;
+
+    if (!parser_check(parser, _SEMICOLON)) {
+        value = expression(parser);
+    }
+
+    consume(parser, _SEMICOLON, "Expect ';' after return value.");
+    return (Stmt *)make_return_statement(keyword, value);
+}   
 
 Stmt *expressionStatement(Parser *parser) {
     Expr *expr = expression(parser);

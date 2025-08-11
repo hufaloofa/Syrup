@@ -27,8 +27,9 @@ Expr *functionCall(SyrFunction *function, Vector *arguments) {
         env_define(env, param->value, arg);
     }
 
-    executeBlock(function->declaration->body, env);
-    return NULL;
+    Expr *result = executeBlock(function->declaration->body, env);
+
+    return result == NULL ? make_nil_expr(function->declaration->name) : result;
 }
 
 size_t functionArity(SyrFunction *function) {

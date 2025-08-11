@@ -62,6 +62,12 @@ typedef struct {
     Vector *body;
 } FunctionStmt;
 
+typedef struct {
+    Stmt base;
+    Token *keyword;
+    Expr *value;
+} ReturnStmt;
+
 PrintStmt *make_print_statement(Expr* value);
 ExprStmt *make_expression_statement(Expr* expr);
 LetStmt *make_let_statement(Token *name, Expr *initialiser);
@@ -69,5 +75,6 @@ BlockStmt *make_block_statement(Vector* statements);
 IfStmt *make_if_statement(Expr *condition, Stmt *thenBranch, Stmt *elseBranch);
 WhileStmt *make_while_statement(Expr *condition, Stmt *body);
 FunctionStmt *make_function_statement(Token *name, Vector *parameters, Vector *body);
+ReturnStmt *make_return_statement(Token *keyword, Expr *value);
 
 #endif
