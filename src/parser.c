@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "../include/parser.h"
 #include "../include/expr.h"
@@ -39,12 +40,22 @@ bool parser_check(Parser *parser, TokenType type) {
     return !parser->eof && parser->current->type == type;
 }
 
-Token *consume(Parser *parser, TokenType type, char* message) {
+Token *consume(Parser *parser, TokenType type, char* message, ...) {
     if (parser_check(parser, type)) {
         return parser_advance(parser);
     } else {
-        fprintf(stderr, "[line %d] Error: %s\n", parser->current->line, message);
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "[line %d] Error at ", parser->current->line);
+        if (parser->current->type == _EOF) {
+                fprintf(stderr, "end: ");
+        } else {
+                fprintf(stderr, "'%s': ", parser->current->value);
+        }
+        va_list ap;
+        va_start(ap, message);
+        vfprintf(stderr, message, ap);
+        va_end(ap);
+        fprintf(stderr, "\n");
+        exit(65);
     }
 }
 
@@ -76,6 +87,8 @@ Expr *assignment(Parser *parser);
 Expr *or(Parser *parser);
 Expr *and(Parser *parser);
 Expr *postfix(Parser *parser);
+Expr *call(Parser *parser);
+Expr *finishCall(Parser *parser, Expr *callee);
 
 Expr *expression(Parser *parser) {
     return assignment(parser);
@@ -191,12 +204,42 @@ Expr *unary(Parser *parser) {
 }
 
 Expr *postfix(Parser *parser) {
-    Expr *expr = primary(parser);
+    Expr *expr = call(parser);
     if (parser_match(parser, 2, _PLUS_PLUS, _MINUS_MINUS)) { 
         Token* op = parser->current - 1; 
         expr = make_postfix_expr(op, expr); 
     }
     return expr;
+}
+
+Expr *call(Parser *parser) {
+    Expr* expr = primary(parser);
+
+    while (true) {
+        if (parser_match(parser, 1, _LEFT_PAR)) {
+            expr = finishCall(parser, expr);
+        } else {
+            break;
+        }
+    }
+    return expr;
+}
+
+Expr *finishCall(Parser *parser, Expr *callee) {
+    Vector *arguments = vector_construct();
+    if (!parser_check(parser,_RIGHT_PAR)) {
+        do {
+            if (vector_size(arguments) >= 255) {
+                fprintf(stderr, "Cant have more than 255 arguments");
+                exit(EXIT_FAILURE);
+            }
+            vector_push_back(arguments, expression(parser));
+        } while (parser_match(parser, 1, _COMMA));
+    }
+
+    Token *paren = consume(parser, _RIGHT_PAR, "Expect ')' after arguments.");
+
+    return make_call_expr(callee, paren, arguments);
 }
 
 Expr *primary(Parser *parser) {
@@ -285,6 +328,7 @@ Vector *block(Parser *parser);
 Stmt *ifStatement(Parser *parser);
 Stmt *whileStatement(Parser *parser);
 Stmt *forStatement(Parser *parser);
+Stmt *function(Parser *parser, char *kind);
 
 Vector *parse_stmt(Parser *parser) {
     Vector *statements = vector_construct();
@@ -296,6 +340,7 @@ Vector *parse_stmt(Parser *parser) {
 }
 
 Stmt *declaration(Parser *parser) {
+    if (parser_match(parser, 1, _DEF)) return function(parser, "function");
     if (parser_match(parser, 1 , _LET)) return letDeclaration(parser);
     return statement(parser);
 }
@@ -392,6 +437,27 @@ Stmt *expressionStatement(Parser *parser) {
     Expr *expr = expression(parser);
     consume(parser, _SEMICOLON, "Expect ';' after value.");
     return (Stmt *)make_expression_statement(expr);
+}
+
+Stmt *function(Parser *parser, char *kind) {
+    Token *name = consume(parser, _IDENTIFIER, "Expect %s name.", kind);
+    consume(parser, _LEFT_PAR, "Expect '(' after %s name.", kind);
+    Vector *parameters = vector_construct();
+    if (!parser_check(parser, _RIGHT_PAR)) {
+        do {
+            if (vector_size(parameters) >= 255) {
+                parse_error(parser->current, "Can't have more than 255 parameters.");
+            }
+
+            vector_push_back(parameters, consume(parser, _IDENTIFIER, "Expect parameter name."));
+        } while (parser_match(parser, 1, _COMMA));
+
+    } 
+    consume(parser, _RIGHT_PAR, "Expect ')' after parameters.");
+
+    consume(parser, _LEFT_CURLY, "Expect '{' before %s body.", kind);
+    Vector *body = block(parser);
+    return (Stmt *)make_function_statement(name, parameters, body);
 }
 
 Stmt *letDeclaration(Parser *parser) {

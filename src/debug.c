@@ -1,4 +1,6 @@
 #include "../include/debug.h"
+#include "../include/lexer.h"
+#include <stdarg.h>
 
 void print_token(Token *token) {
     char *type;
@@ -41,6 +43,12 @@ void print_token(Token *token) {
         case _NONE:  type = "_NONE"; break;
         case _STAR:     type = "_STAR"; break;
         case _DOT:     type = "_DOT"; break;
+        case _PLUS_PLUS:    type = "_PLUS_PLUS"; break;
+        case _MINUS_MINUS: type = "_MINUS_MINUS"; break;
+        case _PLUS_EQUAL: type = "_PLUS_EQUAL"; break;
+        case _MINUS_EQUAL: type = "_MINUS_EQUAL"; break;
+        case _STAR_EQUAL: type = "_STAR_EQUAL"; break;
+        case _SLASH_EQUAL: type = "_SLASH_EQUAL"; break;
     }
 
     printf("TOKEN[type: %s, value: \"%s\", line: %d]\n",
@@ -103,4 +111,28 @@ void print_expr(Expr *expr) {
             printf("None");
             break;
     }
+}
+
+void parse_error(const Token *token, const char *format, ...) {
+        fprintf(stderr, "[line %d] Error at ", token->line);
+        if (token->type == _EOF) {
+                fprintf(stderr, "end: ");
+        } else {
+                fprintf(stderr, "'%s': ", token->value);
+        }
+        va_list ap;
+        va_start(ap, format);
+        vfprintf(stderr, format, ap);
+        va_end(ap);
+        fprintf(stderr, "\n");
+        exit(65);
+}
+
+void interpret_error(const Token *token, const char *format, ...) {
+        va_list ap;
+        va_start(ap, format);
+        vfprintf(stderr, format, ap);
+        va_end(ap);
+        fprintf(stderr, "\n[line %d]\n", token->line);
+        exit(70);
 }

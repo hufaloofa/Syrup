@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "lexer.h"
+#include "../util/vector.h"
+#include "syrCallable.h"
     
 typedef struct Expr Expr;
 
@@ -22,6 +24,9 @@ typedef enum {
     EXPR_ASSIGN,
     EXPR_LOGICAL,
     EXPR_POSTFIX,
+    EXPR_CALL,
+    EXPR_SYR_CALLABLE,
+    EXPR_SYR_FUNCTION,
 } ExprType;
 
 struct Expr{
@@ -59,6 +64,16 @@ struct Expr{
             Expr *lhs;
             Token *op;
         } postfix;
+
+        struct {
+            Expr *callee;
+            Token *paren;
+            Vector *arguments;
+        } call;
+
+        struct {
+            SyrCallable *callable;
+        } SyrCallable;
     };
 
     //assignment only
@@ -80,7 +95,8 @@ Expr *make_postfix_expr(Token *op, Expr* lhs);
 Expr *make_let_expr(char *string, Token *token);
 Expr *make_assign_expr(Token *name, Expr *value);
 Expr *make_logical_expr(Expr *left, Token *op, Expr *right);
-
+Expr *make_call_expr(Expr *callee, Token *paren, Vector *arguments);
+Expr *make_syr_callable_expr(SyrCallable *callable);
 // // only used when evaluating ast
 // Expr *make_num_expr_eval(double num);
 // Expr *make_bool_expr_eval(bool b);

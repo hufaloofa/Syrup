@@ -49,3 +49,12 @@ WhileStmt *make_while_statement(Expr *condition, Stmt *body) {
     return while_statement;
 }
 
+FunctionStmt *make_function_statement(Token *name, Vector *parameters, Vector *body) {
+    FunctionStmt *function_statement = malloc(sizeof(FunctionStmt));
+    function_statement->base.type = STMT_FUNCTION;
+    function_statement->name = name;
+    function_statement->parameters = parameters;
+    function_statement->body = body;
+    return function_statement;
+}
+

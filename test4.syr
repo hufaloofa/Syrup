@@ -1,0 +1,6 @@
+def procedure() {
+  print "don't return anything";
+}
+
+let result = procedure();
+print result;

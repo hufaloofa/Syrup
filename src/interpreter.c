@@ -7,6 +7,9 @@
 #include "../include/statement.h"
 #include "../util/vector.h"
 #include "../include/environment.h"
+#include "../include/syrCallable.h"
+#include "../include/debug.h"
+#include "../include/syrFunction.h"
 
 Expr *visitGroupingExpr(Expr *expr);
 Expr *visitUnaryExpr(Expr *expr);
@@ -15,16 +18,14 @@ Expr *visitLetExpr(Expr *expr);
 Expr *visitAssignExpr(Expr *expr);
 Expr *evaluateExpr(Expr *expr);
 Expr *visitPostfixExpr(Expr *expr);
+Expr *visitCallExpr(Expr *expr);
 
-struct {
-    Env *environment;
-    Env *global;
-} interpreter;
+Interpreter interpreter;
 
 void init() {
-    interpreter.environment = env_create(NULL);
+    interpreter.global = env_create(NULL);
+    interpreter.environment = interpreter.global;
 }
-
 
 void checkNumberOperand(Token *op, Expr *rhs) {
     if (rhs->type == EXPR_NUMBER) return;
@@ -97,6 +98,8 @@ Expr *evaluateExpr(Expr *expr) {
             return visitAssignExpr(expr);
         case EXPR_LOGICAL:
             return visitLogicalExpr(expr);
+        case EXPR_CALL:
+            return visitCallExpr(expr);
         default:
             fprintf(stderr, "evaluateExpr: unknown expr type %d\n", expr->type);
             return make_none_expr();
@@ -288,6 +291,29 @@ Expr *visitBinaryExpr(Expr* expr) {
     return NULL;
 }
 
+Expr *visitCallExpr(Expr *expr) {
+    Expr *callee = evaluateExpr(expr->call.callee);
+
+    Vector *arguments = vector_construct();
+    size_t size = vector_size(expr->call.arguments);
+    for (size_t i=0; i < size; i++) {
+        vector_push_back(arguments, evaluateExpr(vector_at(expr->call.arguments, i)));
+    }
+
+    if (callee->type != EXPR_SYR_CALLABLE) {
+        interpret_error(expr->call.paren, "Can only call functions and classes.");
+    }
+
+    SyrCallable *function = callee->SyrCallable.callable;
+
+    size_t arity = syrCallableArity(function);
+
+    if (size != arity) {
+        interpret_error(expr->call.paren, "Expected %zu arguments but got %zu.", arity, size);
+    }
+    return syrCallableCall(function, arguments);
+}
+
 char *stringify(Expr *result) {
     // char *str;
     if (result == NULL) {
@@ -313,6 +339,8 @@ char *stringify(Expr *result) {
         case EXPR_NIL:
             // printf("nil\n"); break;
             return "nil";
+        case EXPR_SYR_CALLABLE:
+            return syrCallableToString(result->SyrCallable.callable);
         default:
             return "unknown result";
     }
@@ -330,6 +358,7 @@ Expr *visitPrintStatement(PrintStmt *stmt);
 Expr *visitLetStatement(LetStmt *stmt);
 Expr *visitBlockStatement(BlockStmt *stmt);
 Expr *visitWhileStatement(WhileStmt *stmt);
+Expr *visitFunctionStatement(FunctionStmt *stmt);
 
 Expr *execute_stmt(Stmt *stmt) {
     switch (stmt->type) {
@@ -345,6 +374,8 @@ Expr *execute_stmt(Stmt *stmt) {
             return visitIfStatement((IfStmt *)stmt);
         case STMT_WHILE:
             return visitWhileStatement((WhileStmt *)stmt);
+        case STMT_FUNCTION:
+            return visitFunctionStatement((FunctionStmt *)stmt);
         default:
             return NULL;
     }
@@ -360,6 +391,14 @@ void interpret_stmt(Vector* statements) {
 
 Expr *visitExpressionStatement(ExprStmt *stmt) {
     evaluateExpr(stmt->expression);
+    return NULL;
+}
+
+Expr *visitFunctionStatement(FunctionStmt *stmt) {
+    SyrFunction *function = make_function(stmt, interpreter.environment, false);
+    Expr *expr = make_syr_callable_expr((SyrCallable *)function);
+    env_define(interpreter.environment, stmt->name->value, expr);
+    
     return NULL;
 }
 

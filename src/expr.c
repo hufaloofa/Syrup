@@ -90,6 +90,21 @@ Expr *make_postfix_expr(Token *op, Expr* lhs) {
     return expr;
 }
 
+Expr *make_call_expr(Expr *callee, Token *paren, Vector *arguments) {
+    Expr *expr = make_expr(EXPR_CALL);
+    expr->call.callee = callee;
+    expr->call.paren = paren;
+    expr->call.arguments = arguments;
+    return expr;
+}
+
+Expr *make_syr_callable_expr(SyrCallable *callable) {
+    Expr *expr = make_expr(EXPR_SYR_CALLABLE);
+    expr->SyrCallable.callable = callable;
+    return expr;
+}
+
+
 // Expr *make_num_expr_eval(double num) {
 //     Expr *expr = make_expr(EXPR_NUMBER);
 //     expr->literal.number = num;
