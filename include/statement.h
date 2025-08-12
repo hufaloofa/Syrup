@@ -15,6 +15,7 @@ typedef enum {
     STMT_RETURN,
     STMT_LET,
     STMT_WHILE,
+    STMT_PRINTLN,
 } StmtType;
 
 typedef struct {
@@ -25,6 +26,11 @@ typedef struct {
     Stmt base;
     Expr *expression;
 } PrintStmt;
+
+typedef struct {
+    Stmt base;
+    Expr *expression;
+} PrintLnStmt;
 
 typedef struct {
     Stmt base;
@@ -76,5 +82,6 @@ IfStmt *make_if_statement(Expr *condition, Stmt *thenBranch, Stmt *elseBranch);
 WhileStmt *make_while_statement(Expr *condition, Stmt *body);
 FunctionStmt *make_function_statement(Token *name, Vector *parameters, Vector *body);
 ReturnStmt *make_return_statement(Token *keyword, Expr *value);
+PrintLnStmt *make_println_statement(Expr* value);
 
 #endif

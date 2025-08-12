@@ -297,6 +297,7 @@ void synchronise(Parser *parser) {
             case _DEF:
             case _PRINT:
             case _WHILE:
+            case _PRINTLN:
             case _FOR:
             case _IF:
             case _RETURN:
@@ -321,6 +322,7 @@ Expr *parse_expr(Parser* parser) {
 
 Stmt *statement(Parser *parser);
 Stmt *printStatement(Parser *parser);
+Stmt *printlnStatement(Parser *parser);
 Stmt *expressionStatement(Parser *parser);
 Stmt *declaration(Parser *parser);
 Stmt *letDeclaration(Parser *parser);
@@ -348,6 +350,7 @@ Stmt *declaration(Parser *parser) {
 
 Stmt *statement(Parser *parser) {
     if (parser_match(parser, 1, _PRINT)) return printStatement(parser);
+    if (parser_match(parser, 1, _PRINTLN)) return printlnStatement(parser);
     // if (parser_match(parser, 1, _LET)) return letDeclaration(parser);
     if (parser_match(parser, 1, _LEFT_CURLY)) return (Stmt *)make_block_statement(block(parser));
     if (parser_match(parser, 1, _IF)) return ifStatement(parser);
@@ -433,6 +436,12 @@ Stmt *printStatement(Parser *parser) {
     Expr *value = expression(parser);
     consume(parser, _SEMICOLON, "Expect ';' after value.");
     return (Stmt *)make_print_statement(value);
+}
+
+Stmt *printlnStatement(Parser *parser) {
+    Expr *value = expression(parser);
+    consume(parser, _SEMICOLON, "Expect ';' after value.");
+    return (Stmt *)make_println_statement(value);
 }
 
 Stmt *returnStatement(Parser *parser) {

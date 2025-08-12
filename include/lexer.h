@@ -24,7 +24,7 @@ typedef enum {
     // key words
     _AND, _FOR, _OR, _ELSE, _IF, 
     _TRUE, _FALSE, _PRINT, _RETURN, _WHILE, 
-    _LET, _DEF, _ERROR, _NIL,
+    _LET, _DEF, _ERROR, _NIL, _PRINTLN,
     
     _EOF,
 

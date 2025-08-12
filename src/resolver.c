@@ -92,6 +92,10 @@ void resolvePrintStatement(PrintStmt *stmt) {
     resolveExpression(stmt->expression);
 }
 
+void resolvePrintlnStatement(PrintLnStmt *stmt) {
+    resolveExpression(stmt->expression);
+}
+
 void resolveReturnStatement(ReturnStmt *stmt) {
     if (resolver.currentFunction == FUNCTION_NONE) {
         fprintf(stderr, "Cannot return from top-level code.\n");
@@ -149,6 +153,9 @@ void resolveStatement(Stmt *stmt) {
             break;
         case STMT_PRINT:
             resolvePrintStatement(((PrintStmt *)stmt));
+            break;
+        case STMT_PRINTLN:
+            resolvePrintlnStatement(((PrintLnStmt *)stmt));
             break;
         case STMT_LET:
             resolveLetStatement((LetStmt *)stmt);

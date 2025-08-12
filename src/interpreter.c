@@ -380,6 +380,7 @@ Expr *visitBlockStatement(BlockStmt *stmt);
 Expr *visitWhileStatement(WhileStmt *stmt);
 Expr *visitFunctionStatement(FunctionStmt *stmt);
 Expr *visitReturnStatement(ReturnStmt *stmt);
+Expr *visitPrintlnStatement(PrintLnStmt *stmt);
 
 Expr *execute_stmt(Stmt *stmt) {
     switch (stmt->type) {
@@ -389,6 +390,8 @@ Expr *execute_stmt(Stmt *stmt) {
             return visitExpressionStatement((ExprStmt *)stmt);
         case STMT_PRINT: 
             return visitPrintStatement((PrintStmt *)stmt);
+        case STMT_PRINTLN:
+            return visitPrintlnStatement((PrintLnStmt *)stmt);
         case STMT_LET:
             return visitLetStatement((LetStmt *)stmt);
         case STMT_IF:
@@ -447,6 +450,12 @@ Expr *visitWhileStatement(WhileStmt *stmt) {
 Expr *visitPrintStatement(PrintStmt *stmt) {
     Expr *value = evaluateExpr(stmt->expression);
     printf("%s", stringify(value));
+    return NULL;
+}
+
+Expr *visitPrintlnStatement(PrintLnStmt *stmt) {
+    Expr *value = evaluateExpr(stmt->expression);
+    printf("%s\n", stringify(value));
     return NULL;
 }
 

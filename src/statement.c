@@ -11,6 +11,13 @@ PrintStmt *make_print_statement(Expr* value) {
     return print_statement;
 }
 
+PrintLnStmt *make_println_statement(Expr* value) {
+    PrintLnStmt *println_statement = malloc(sizeof(PrintLnStmt));
+    println_statement->base.type = STMT_PRINTLN;
+    println_statement->expression = value;
+    return println_statement;
+}
+
 ExprStmt *make_expression_statement(Expr* expr) {
     ExprStmt *expression_statement = malloc(sizeof(ExprStmt));
     expression_statement->base.type = STMT_EXPRESSION;

@@ -164,7 +164,17 @@ TokenType identifierType(Lexer *lexer) {
         case 'o':
             return checkWord(lexer, 1, 1, "r", _OR);
         case 'p':
-            return checkWord(lexer, 1, 4, "rint", _PRINT);
+            if (lexer->current - lexer->start > 1) {
+                switch (lexer->start[1]) {
+                    case 'r':
+                        // Check for "println" first (longer match)
+                        if (checkWord(lexer, 2, 5, "intln", _PRINTLN) == _PRINTLN) {
+                            return _PRINTLN;
+                        }
+                        // Then check for "print"
+                        return checkWord(lexer, 2, 3, "int", _PRINT);
+                }
+            }
         case 'r':
             return checkWord(lexer, 1, 5, "eturn", _RETURN);
         case 't':
