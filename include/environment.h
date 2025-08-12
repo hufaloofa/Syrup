@@ -11,7 +11,7 @@
 typedef struct Env Env;
 
 struct Env{
-    map values;
+    Map *values;
     Env *enclosing;
 };
 
@@ -19,5 +19,7 @@ Env *env_create(Env *enclosing);
 void env_define(Env * env, char* name, Expr *value);
 Expr *env_get(Env *env, Token *name);
 void env_assign(Env *env, Token *name, Expr *value);
-
+Expr *env_get_at(Env *env, size_t distance, char *name);
+Env *ancestor(Env *env, size_t distance);
+void env_assign_at(Env *env, size_t distance, Token *name, Expr *value);
 #endif

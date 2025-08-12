@@ -7,12 +7,11 @@
 #include "../include/environment.h"
 #include "../include/interpreter.h"
 
-SyrFunction *make_function(FunctionStmt *declaration, Env *closure, bool isInitializer) {
+SyrFunction *make_function(FunctionStmt *declaration, Env *closure) {
     SyrFunction *function = malloc(sizeof(SyrFunction));
     function->base.type = SYR_CALLABLE_FUNCTION;
     function->declaration = declaration;
     function->closure = closure;
-    function->isInitializer = isInitializer;
     return function;
 }
 

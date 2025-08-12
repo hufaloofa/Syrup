@@ -9,10 +9,12 @@
 typedef struct {
     Env *environment;
     Env *global;
+    Map *locals;
 } Interpreter;
 
 void *interpret_expr(Expr *expr);
 void interpret_stmt(Vector* statements);
 Expr *executeBlock(Vector *statements, Env *env);
 
+void interpreter_resolve(Expr *expr, size_t depth);
 #endif

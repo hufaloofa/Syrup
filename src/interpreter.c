@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h> 
 
 #include "../include/interpreter.h"
 #include "../include/expr.h"
@@ -23,8 +24,15 @@ Expr *visitCallExpr(Expr *expr);
 Interpreter interpreter;
 
 void init() {
+    static bool initialised = false;
+    if (initialised) return;
+    initialised = true;
+
     interpreter.global = env_create(NULL);
     interpreter.environment = interpreter.global;
+    interpreter.locals = map_construct(ptr_compare);
+
+    initialised = true;
 }
 
 void checkNumberOperand(Token *op, Expr *rhs) {
@@ -129,19 +137,17 @@ Expr  *visitUnaryExpr(Expr *expr) {
     switch (expr->unary.op->type) {
         case _MINUS:
             checkNumberOperand(expr->unary.op, rhs);
-            rhs->literal.number *= -1;
-            break;
+            return make_num_expr(-rhs->literal.number, expr->unary.op);
         case _BANG:
-            rhs->literal.boolean = !isTruthy(rhs);
-            break;
+            return make_bool_expr(!isTruthy(rhs), expr->unary.op);
         case _PLUS_PLUS:
             checkNumberOperand(expr->unary.op, rhs);
             ++(rhs->literal.number);
-            break;
+            return make_num_expr(rhs->literal.number, expr->unary.op);
         case _MINUS_MINUS:
             checkNumberOperand(expr->unary.op, rhs);
             --(rhs->literal.number);
-            break;
+            return make_num_expr(rhs->literal.number, expr->unary.op);
         default:
             break;
     }
@@ -169,28 +175,58 @@ Expr *visitPostfixExpr(Expr *expr) {
         case _PLUS_PLUS:
             checkNumberOperand(expr->postfix.op, lhs);
             (lhs->literal.number)++;
-            break;
+            return make_num_expr(lhs->literal.number, expr->postfix.op);
         case _MINUS_MINUS:
             checkNumberOperand(expr->postfix.op, lhs);
             (lhs->literal.number)--;
-            break;
+            return make_num_expr(lhs->literal.number, expr->postfix.op);
         default:
             break;
     }
 
     return lhs;
 }
-
+Expr *lookUpVariable(Token *name, Expr *expr);
 
 Expr *visitLetExpr(Expr *expr) {
-    return env_get(interpreter.environment, expr->literal.token);
+    // return env_get(interpreter.environment, expr->literal.token);
+    return lookUpVariable(expr->literal.token, expr);
+}
+
+Expr *lookUpVariable(Token *name, Expr *expr) {
+    if (map_contains(interpreter.locals, expr)) {
+        size_t distance = (size_t)map_get(interpreter.locals, expr);
+        return env_get_at(interpreter.environment, distance, name->value);
+    } else {
+        return env_get(interpreter.global, name);
+    }
 }
 
 Expr *visitAssignExpr(Expr *expr) {
     Expr* value = evaluateExpr(expr->value);
-    env_assign(interpreter.environment, expr->literal.token, value);
+    // env_assign(interpreter.environment, expr->literal.token, value);
+    // void *p = map_get(interpreter.locals, expr->literal.token->value); 
+    // if (p != NULL) {
+    //     size_t distance = (size_t)(uintptr_t)p;
+    //     env_assign_at(interpreter.environment, distance, expr->literal.token, value);
+    // } else {
+    //     env_assign(interpreter.global, expr->literal.token, value);
+    // }
+
+    if (map_contains(interpreter.locals, expr)) {
+        size_t distance = (size_t)(uintptr_t)map_get(interpreter.locals, expr);
+        env_assign_at(interpreter.environment, distance, expr->literal.token, value);
+    } else {
+        env_assign(interpreter.global, expr->literal.token, value);
+    }
     return value;
 }
+
+// Expr *visitAssignExpr(Expr *expr) {
+//     Expr* value = evaluateExpr(expr->value);
+//     env_assign(interpreter.environment, expr->literal.token, value);
+//     return value;
+// }
 
 Expr *visitBinaryExpr(Expr* expr) {
     Expr* lhs = evaluateExpr(expr->binary.lhs);
@@ -382,7 +418,7 @@ Expr *visitExpressionStatement(ExprStmt *stmt) {
 }
 
 Expr *visitFunctionStatement(FunctionStmt *stmt) {
-    SyrFunction *function = make_function(stmt, interpreter.environment, false);
+    SyrFunction *function = make_function(stmt, interpreter.environment);
     Expr *expr = make_syr_callable_expr((SyrCallable *)function);
     env_define(interpreter.environment, stmt->name->value, expr);
     
@@ -452,4 +488,9 @@ Expr *executeBlock(Vector *statements, Env *env) {
 
 Expr *visitBlockStatement(BlockStmt *stmt) {
     return executeBlock(stmt->statements, env_create(interpreter.environment));
+}
+
+void interpreter_resolve(Expr *expr, size_t depth) {
+    init();
+    map_put(interpreter.locals, expr, (void *)depth);
 }

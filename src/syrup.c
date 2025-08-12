@@ -8,6 +8,8 @@
 #include "../include/interpreter.h"
 #include "../include/statement.h"
 #include "../util/vector.h"
+#include "../include/environment.h"
+#include "../include/resolver.h"
 
 #define MAX_TOKENS 1024
 
@@ -35,11 +37,17 @@ void run(char* source) {
     //     printf("parsing failed XD");
     // }
     Vector *statements = parse_stmt(&parser);
-
+    // if (statements == NULL || vector_size(statements) == 0) {
+    //     printf("No statements parsed\n");
+    //     free(ts);
+    //     return;
+    // }
 
     // printf("\n");
     // printf("\n");
     
     // interpret_expr(ast);
+    resolve(statements);
+    // free(ts);
     interpret_stmt(statements);
 }

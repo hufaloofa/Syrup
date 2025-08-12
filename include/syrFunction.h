@@ -11,10 +11,10 @@ typedef struct {
     SyrCallable base;
     FunctionStmt *declaration;
     Env *closure;
-    bool isInitializer;
+    bool isInitializer; 
 } SyrFunction;
 
-SyrFunction *make_function(FunctionStmt *declaration, Env *closure, bool isInitializer);
+SyrFunction *make_function(FunctionStmt *declaration, Env *closure);
 Expr *functionCall(SyrFunction *function, Vector *arguments);
 size_t functionArity(SyrFunction *function);
 char *functionToString(SyrFunction *callable);
