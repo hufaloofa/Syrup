@@ -4,6 +4,12 @@ Welcome to Syrup
 # build
 make
 
+# build for web
+make web
+cd web
+npm install
+npm run dev
+
 # interpret syrup file
 ./syrup <input.syr>
 ```

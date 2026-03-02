@@ -447,9 +447,19 @@ Expr *visitWhileStatement(WhileStmt *stmt) {
 }
 
 
+#ifdef __EMSCRIPTEN__
+void web_print(const char* str);
+void web_printerr(const char* str);
+#endif
+
 Expr *visitPrintStatement(PrintStmt *stmt) {
     Expr *value = evaluateExpr(stmt->expression);
-    printf("%s", stringify(value));
+    char *s = stringify(value);
+#ifdef __EMSCRIPTEN__
+    web_print(s);
+#else
+    printf("%s", s);
+#endif
     return NULL;
 }
 
