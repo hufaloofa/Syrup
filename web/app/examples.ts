@@ -10,14 +10,19 @@ export const examples: Example[] = [
   },
   {
     name: "variables & return",
-    // test.syr
     code: `let a = 5;
-print a;
+println a;
 
 let a = 3;
-print a;
+println a;
 
-return "at top level";`,
+def combine(a, b) {
+ return a + b;
+}
+
+println combine("Hello", " And Goodbyes");
+
+// return "at top level"; // This will return an error as return is out of scope`,
   },
   {
     name: "while loop",
