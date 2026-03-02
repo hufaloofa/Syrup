@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(awk NR>=1015 && NR<=1030:*)",
-      "Bash(awk NR>=895 && NR<=920:*)"
-    ]
-  }
-}
