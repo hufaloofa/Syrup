@@ -62,6 +62,7 @@ export default function Playground() {
   const [status, setStatus] = useState<'loading' | 'ready'>('loading');
   const [showExamples, setShowExamples] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   // Accumulate output as a plain string so print (no newline) and println work correctly
   const outputRef = useRef('');
   const hasErrorRef = useRef(false);
@@ -171,6 +172,41 @@ export default function Playground() {
         </div>
       </div>
 
+      {showAbout && (
+        <div
+          className="fixed inset-0 bg-black/60 z-20 flex items-center justify-center"
+          onClick={() => setShowAbout(false)}
+        >
+          <div
+            className="bg-[#181825] border border-[#313244] rounded-lg p-6 max-w-md w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-5">
+              <h2 className="text-[#cba6f7] text-sm uppercase tracking-widest">about syrup</h2>
+              <button
+                onClick={() => setShowAbout(false)}
+                className="text-[#6c7086] hover:text-[#cdd6f4] text-lg leading-none"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex flex-col gap-3 text-sm text-[#cdd6f4] leading-relaxed">
+              <p>
+                Syrup is a dynamically typed scripting language with a C and Python like syntax, built from scratch in C.
+              </p>
+              <ul className="flex flex-col gap-2 text-[#a6adc8]">
+                <li>— Tree-walk interpreter written in C</li>
+                <li>— Hand-written lexer and recursive descent parser</li>
+                <li>— AST-based expression evaluation</li>
+                <li>— Control flow: <span className="text-[#cdd6f4]">if / else, while, for</span></li>
+                <li>— First-class functions with lexical scoping</li>
+                <li>— Compiled to WebAssembly via Emscripten</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showHelp && (
         <div
           className="fixed inset-0 bg-black/60 z-20 flex items-center justify-center"
@@ -241,6 +277,13 @@ export default function Playground() {
           className="border border-[#313244] text-[#6c7086] font-mono text-sm w-24 h-8 rounded-md cursor-pointer hover:border-[#cba6f7] hover:text-[#cba6f7] flex items-center justify-center"
         >
           syntax
+        </button>
+
+        <button
+          onClick={() => setShowAbout(true)}
+          className="border border-[#313244] text-[#6c7086] font-mono text-sm w-8 h-8 rounded-md cursor-pointer hover:border-[#cba6f7] hover:text-[#cba6f7] flex items-center justify-center"
+        >
+          ?
         </button>
       </div>
     </div>
